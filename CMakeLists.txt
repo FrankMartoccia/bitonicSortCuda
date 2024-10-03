@@ -13,6 +13,11 @@ add_executable(parallel
         src/parallel/bitonicSortGPU.cu
         src/parallel/sort.cu
         src/parallel/main.cpp
+        src/parallel/TimerGPU.cu
+        src/parallel/TimerGPU.cuh
+        src/parallel/constants.h
+        src/sequential/TimerCPU.cpp
+        src/sequential/TimerCPU.h
 )
 
 # Ensure that the target supports CUDA separable compilation
@@ -24,4 +29,4 @@ set_target_properties(parallel PROPERTIES
 target_link_libraries(parallel cuda)
 
 # Specify the source file properties for CUDA files if necessary
-set_source_files_properties(src/parallel/utils.cpp PROPERTIES LANGUAGE CUDA)
+set_source_files_properties(src/parallel/utils.cpp src/parallel/TimerGPU.cuh PROPERTIES LANGUAGE CUDA)

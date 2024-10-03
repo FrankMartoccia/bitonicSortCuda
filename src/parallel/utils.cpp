@@ -1,19 +1,22 @@
 #include "utils.h"
+#include "constants.h"
+
 #include <fstream>
 #include <iostream>
-#include <stdio.h>
-#include <Windows.h>
 #include <cuda_runtime.h>
+#include <filesystem>
+#include <chrono>
+#include <random>
 
-bool createFolder(char *folderName)
+bool createFolder(const std::string &folderName)
 {
-	return CreateDirectory(folderName, NULL);
+	return std::filesystem::create_directory(folderName);
 }
 
 /*
 Appends provided text to file.
 */
-void appendToFile(const string &fileName, const string &text)
+void appendToFile(const std::string &fileName, const std::string &text)
 {
 	std::ofstream file;
 	file.open(fileName, std::fstream::app);
@@ -25,83 +28,44 @@ void appendToFile(const string &fileName, const string &text)
 /*
 Checks if there was an error.
 */
-void checkMallocError(void *ptr)
+void checkMallocError(const void *ptr)
 {
-	if (ptr == NULL)
+	if (ptr == nullptr)
 	{
 		std::cerr << "Error in host malloc.\n";
 		exit(EXIT_FAILURE);
 	}
 }
 
-cudaDeviceProp getCudaDeviceProp(uint_t deviceIndex)
+cudaDeviceProp getCudaDeviceProp(unsigned int deviceIndex)
 {
-	cudaDeviceProp deviceProp;
+	cudaDeviceProp deviceProp{};
 	cudaGetDeviceProperties(&deviceProp, deviceIndex);
 	return deviceProp;
 }
 
-void fillArrayKeyOnly(uint32_t *keys, uint_t tableLen, uint_t interval, uint_t bucketSize)
+void fillArrayKeyOnly(uint32_t* keys, unsigned int tableLen, unsigned int interval)
 {
-	auto seed = chrono::high_resolution_clock::now().time_since_epoch().count() + generatorCalls++;
-	auto generator = bind(uniform_int_distribution<uint32_t>(0, interval), mt19937(seed));
+	// Use high-resolution clock to generate a seed for randomness
+	auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
-	for (uint_t i = 0; i < tableLen; i++)
+	// Create a random number generator with the seed
+	std::mt19937 generator(seed);
+
+	// Define the distribution range (0 to interval)
+	std::uniform_int_distribution<uint32_t> distribution(0, interval);
+
+	// Fill the array with random numbers within the specified interval
+	for (unsigned int i = 0; i < tableLen; ++i)
 	{
-		keys[i] = generator();
+		keys[i] = distribution(generator);
 	}
-
-	break;
-}
-
-/*
-Starts the stopwatch (remembers the current time).
-*/
-void startStopwatch(LARGE_INTEGER* start)
-{
-    QueryPerformanceCounter(start);
-}
-
-/*
-Ends the stopwatch (calculates the difference between current time and parameter "start") and returns time
-in milliseconds. Also prints out comment.
-*/
-double endStopwatch(LARGE_INTEGER start, char* comment)
-{
-    LARGE_INTEGER frequency;
-    LARGE_INTEGER end;
-    double elapsedTime;
-
-    QueryPerformanceFrequency(&frequency);
-    QueryPerformanceCounter(&end);
-    elapsedTime = (end.QuadPart - start.QuadPart) * 1000.0 / frequency.QuadPart;
-
-    if (comment != NULL)
-    {
-        printf("%s: %.5lf ms\n", comment, elapsedTime);
-    }
-
-    return elapsedTime;
-}
-
-/*
-Sorts data with C++ qsort, which sorts data 100% correctly. This is needed to verify parallel and sequential
-sorts.
-*/
-double sortCorrect(uint32_t *dataTable, uint_t tableLen, order_t sortOrder)
-{
-	LARGE_INTEGER timer;
-	startStopwatch(&timer);
-
-	quickSort<uint32_t>(dataTable, tableLen, sortOrder);
-
-	return endStopwatch(timer);
 }
 
 /*
 Sorts an array with C quicksort implementation.
 */
-void quickSort(uint32_t *dataTable, uint_t tableLen, order_t sortOrder)
+void quickSort(uint32_t *dataTable, const unsigned int tableLen, int sortOrder)
 {
     if (sortOrder == ORDER_ASC)
     {
@@ -111,4 +75,58 @@ void quickSort(uint32_t *dataTable, uint_t tableLen, order_t sortOrder)
     {
         qsort(dataTable, tableLen, sizeof(*dataTable), compareDesc);
     }
+}
+
+/*
+Compare function for ASCENDING order needed for C++ qsort.
+*/
+int compareAsc(const void* elem1, const void* elem2)
+{
+	// Cannot use subtraction because of unsigned data types. Another option would be to convert to bigger data
+	// type, but the result has to be converted to int.
+	if (*(uint32_t*)elem1 > *(uint32_t*)elem2)
+	{
+		return 1;
+	}
+	if (*(uint32_t*)elem1 < *(uint32_t*)elem2)
+	{
+		return -1;
+	}
+
+	return 0;
+}
+
+/*
+Compare function for DESCENDING order needed for C++ qsort.
+*/
+int compareDesc(const void* elem1, const void* elem2)
+{
+	// Cannot use subtraction because of unsigned data types. Another option would be to convert to bigger data
+	// type, but the result has to be converted to int.
+	if (*(uint32_t*)elem1 < *(uint32_t*)elem2)
+	{
+		return 1;
+	}
+	if (*(uint32_t*)elem1 > *(uint32_t*)elem2)
+	{
+		return -1;
+	}
+
+	return 0;
+}
+
+/*
+Compares two arrays and prints out if they are the same or if they differ.
+*/
+bool compareArrays(const uint32_t* array1, const uint32_t* array2, const unsigned int arrayLen)
+{
+	for (unsigned int i = 0; i < arrayLen; i++)
+	{
+		if (array1[i] != array2[i])
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
