@@ -17,5 +17,7 @@ template <unsigned int threadsBitonicSort, unsigned int elemsBitonicSort>
 __device__ void calcDataBlockLength(unsigned int &offset, unsigned int &dataBlockLength, unsigned int tableLen);
 template <int sortOrder>
 __device__ void compareExchange(uint32_t *elem1, uint32_t *elem2);
+bool isPowerOfTwo(unsigned int value);
+unsigned int nextPowerOf2(unsigned int value);
 
 #endif  // UTILS_H

@@ -156,3 +156,32 @@ __device__ void compareExchange(uint32_t *elem1, uint32_t *elem2)
 		*elem2 = temp;
 	}
 }
+
+/*
+Tests if number is power of 2.
+*/
+bool isPowerOfTwo(unsigned int value)
+{
+	return (value != 0) && ((value & (value - 1)) == 0);
+}
+
+/*
+Return the next power of 2 for provided value. If value is already power of 2, it returns value.
+*/
+unsigned int nextPowerOf2(unsigned int value)
+{
+	if (isPowerOfTwo(value))
+	{
+		return value;
+	}
+
+	value--;
+	value |= value >> 1;
+	value |= value >> 2;
+	value |= value >> 4;
+	value |= value >> 8;
+	value |= value >> 16;
+	value++;
+
+	return value;
+}

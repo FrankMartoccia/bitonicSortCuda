@@ -18,6 +18,7 @@ add_executable(parallel
         src/parallel/constants.h
         src/sequential/TimerCPU.cpp
         src/sequential/TimerCPU.h
+        src/parallel/sort.cuh
 )
 
 # Ensure that the target supports CUDA separable compilation
