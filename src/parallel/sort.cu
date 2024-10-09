@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "TimerGPU.cuh"
-#include "bitonicSortGPU.cu"
+#include "bitonicSortGPU.cuh"
 #include "cuda_runtime.h"
 
 // Error checking function (assuming it is defined somewhere in your project)
@@ -81,11 +81,11 @@ void Sort::sortValues()
 
     if (_sort_order == ORDER_ASC)
     {
-        bitonicSortParallel<ORDER_ASC>(_d_values, _array_length);
+        bitonicSortParallel(_d_values, _array_length, ORDER_ASC);
     }
     else
     {
-        bitonicSortParallel<ORDER_DESC>(_d_values, _array_length);
+        bitonicSortParallel(_d_values, _array_length, ORDER_DESC);
     }
 }
 

@@ -6,9 +6,9 @@ Executes one step of bitonic merge.
 "OffsetGlobal" is needed to calculate correct thread index for global bitonic merge.
 "TableLen" is needed for global bitonic merge to verify if elements are still inside array boundaries.
 */
-template <unsigned int threadsKernel, int sortOrder, bool isFirstStepOfPhase>
 __device__ void bitonicMergeStep(
-    uint32_t *values, unsigned int offsetGlobal, unsigned int tableLen, unsigned int dataBlockLen, unsigned int stride
+    uint32_t *values, unsigned int offsetGlobal, unsigned int tableLen, unsigned int dataBlockLen, unsigned int stride, unsigned int threadsKernel,
+    int sortOrder, bool isFirstStepOfPhase
 )
 {
     // Every thread compares and exchanges 2 elements
@@ -34,19 +34,19 @@ __device__ void bitonicMergeStep(
             break;
         }
 
-        compareExchange<sortOrder>(&values[index], &values[index + offset]);
+        compareExchange(&values[index], &values[index + offset], sortOrder);
     }
 }
 
 /*
 Sorts data with NORMALIZED bitonic sort.
 */
-template <unsigned int threadsBitonicSort, unsigned int elemsBitonicSort, int sortOrder>
-__global__ void normalizedBitonicSort(uint32_t *keysInput, uint32_t *keysOutput, uint32_t tableLen)
+__global__ void normalizedBitonicSort(uint32_t *keysInput, uint32_t *keysOutput, uint32_t tableLen,
+    unsigned int threadsBitonicSort, unsigned int elemsBitonicSort, int sortOrder)
 {
     extern __shared__ uint32_t bitonicSortTile[];
     unsigned int offset, dataBlockLength;
-    calcDataBlockLength<threadsBitonicSort, elemsBitonicSort>(offset, dataBlockLength, tableLen);
+    calcDataBlockLength(offset, dataBlockLength, tableLen, threadsBitonicSort, elemsBitonicSort);
 
     // Reads data from global to shared memory.
     for (unsigned int tx = threadIdx.x; tx < dataBlockLength; tx += threadsBitonicSort)
@@ -63,14 +63,15 @@ __global__ void normalizedBitonicSort(uint32_t *keysInput, uint32_t *keysOutput,
         {
             if (stride == subBlockSize)
             {
-                bitonicMergeStep<threadsBitonicSort, sortOrder, true>(
-                    bitonicSortTile, 0, dataBlockLength, dataBlockLength, stride
+                bitonicMergeStep(
+                    bitonicSortTile, 0, dataBlockLength, dataBlockLength, stride, threadsBitonicSort, sortOrder, true
                 );
             }
             else
             {
-                bitonicMergeStep<threadsBitonicSort, sortOrder, false>(
-                    bitonicSortTile, 0, dataBlockLength, dataBlockLength, stride
+                bitonicMergeStep(
+                    bitonicSortTile, 0, dataBlockLength, dataBlockLength, stride,
+                    threadsBitonicSort, sortOrder, false
                 );
             }
             __syncthreads();
@@ -87,22 +88,22 @@ __global__ void normalizedBitonicSort(uint32_t *keysInput, uint32_t *keysOutput,
 /*
 Global bitonic merge for sections, where stride IS GREATER than max shared memory size.
 */
-template <unsigned int threadsMerge, unsigned int elemsMerge, int sortOrder, bool isFirstStepOfPhase>
-__global__ void bitonicMergeGlobalKernel(uint32_t *dataTable, unsigned int tableLen, unsigned int step)
+__global__ void bitonicMergeGlobalKernel(uint32_t *dataTable, unsigned int tableLen, unsigned int step, unsigned int threadsMerge,
+    unsigned int elemsMerge, int sortOrder, bool isFirstStepOfPhase)
 {
     unsigned int offset, dataBlockLength;
-    calcDataBlockLength<threadsMerge, elemsMerge>(offset, dataBlockLength, tableLen);
+    calcDataBlockLength(offset, dataBlockLength, tableLen, threadsMerge, elemsMerge);
 
-    bitonicMergeStep<threadsMerge, sortOrder, isFirstStepOfPhase>(
-        dataTable, offset / 2, tableLen, dataBlockLength, 1 << (step - 1)
+    bitonicMergeStep(
+        dataTable, offset / 2, tableLen, dataBlockLength, 1 << (step - 1), threadsMerge, sortOrder,
+        isFirstStepOfPhase
     );
 }
 
 /*
 Sorts sub-blocks of input data with bitonic sort.
 */
-template <int sortOrder>
-void runBitonicSortKernel(uint32_t *d_values, unsigned int arrayLength)
+void runBitonicSortKernel(uint32_t *d_values, unsigned int arrayLength, int sortOrder)
 {
     unsigned int elemsPerThreadBlock = THREADS_BITONIC_SORT * ELEMENTS_BITONIC_SORT;
     unsigned int sharedMemSize = elemsPerThreadBlock * sizeof(*d_values);
@@ -110,17 +111,16 @@ void runBitonicSortKernel(uint32_t *d_values, unsigned int arrayLength)
     dim3 dimGrid((arrayLength - 1) / elemsPerThreadBlock + 1, 1, 1);
     dim3 dimBlock(THREADS_BITONIC_SORT, 1, 1);
 
-    normalizedBitonicSort
-            <THREADS_BITONIC_SORT, ELEMENTS_BITONIC_SORT, sortOrder><<<dimGrid, dimBlock, sharedMemSize>>>(
-            d_values, d_values, arrayLength);
+    normalizedBitonicSort <<<dimGrid, dimBlock, sharedMemSize>>>(
+            d_values, d_values, arrayLength, THREADS_BITONIC_SORT, ELEMENTS_BITONIC_SORT,
+            sortOrder);
 }
 
 /*
 Merges array, if data blocks are larger than shared memory size. It executes only one STEP of one PHASE per
 kernel launch.
 */
-template <int sortOrder>
-void runBitonicMergeGlobalKernel(uint32_t *d_values, unsigned int arrayLength, unsigned int phase, unsigned int step)
+void runBitonicMergeGlobalKernel(uint32_t *d_values, unsigned int arrayLength, unsigned int phase, unsigned int step, int sortOrder)
 {
     unsigned int elemsPerThreadBlock = THREADS_GLOBAL_MERGE * ELEMENTS_GLOBAL_MERGE;
 
@@ -131,22 +131,22 @@ void runBitonicMergeGlobalKernel(uint32_t *d_values, unsigned int arrayLength, u
     if (isFirstStepOfPhase)
         {
             bitonicMergeGlobalKernel
-                <THREADS_GLOBAL_MERGE, ELEMENTS_GLOBAL_MERGE, sortOrder, true><<<dimGrid, dimBlock>>>(
-                d_values, arrayLength, step
+                <<<dimGrid, dimBlock>>>(
+                d_values, arrayLength, step, THREADS_GLOBAL_MERGE, ELEMENTS_GLOBAL_MERGE, sortOrder, true
             );
         }
     else
         {
             bitonicMergeGlobalKernel
-                <THREADS_GLOBAL_MERGE, ELEMENTS_GLOBAL_MERGE, sortOrder, false><<<dimGrid, dimBlock>>>(
-                d_values, arrayLength, step
+                <<<dimGrid, dimBlock>>>(
+                d_values, arrayLength, step, THREADS_GLOBAL_MERGE, ELEMENTS_GLOBAL_MERGE, sortOrder,
+                false
             );
         }
 }
 
 
-template <int sortOrder>
-void bitonicSortParallel(uint32_t *d_values, unsigned int array_length) {
+void bitonicSortParallel(uint32_t *d_values, unsigned int array_length, int sortOrder) {
     unsigned int arrayLenPower2 = nextPowerOf2(array_length);
     unsigned int elemsPerBlockBitonicSort = THREADS_BITONIC_SORT * ELEMENTS_BITONIC_SORT;
 
@@ -155,8 +155,8 @@ void bitonicSortParallel(uint32_t *d_values, unsigned int array_length) {
     unsigned int phasesAll = log2((double)arrayLenPower2);
 
     // Sorts blocks of input data with bitonic sort
-    runBitonicSortKernel<sortOrder>(
-        d_values, array_length
+    runBitonicSortKernel(
+        d_values, array_length, sortOrder
     );
 
     // Bitonic merge using only the global merge kernel
@@ -164,8 +164,8 @@ void bitonicSortParallel(uint32_t *d_values, unsigned int array_length) {
     {
         for (unsigned int step = phase; step >= 1; step--)
         {
-            runBitonicMergeGlobalKernel<sortOrder>(
-                d_values, array_length, phase, step
+            runBitonicMergeGlobalKernel(
+                d_values, array_length, phase, step, sortOrder
             );
         }
     }

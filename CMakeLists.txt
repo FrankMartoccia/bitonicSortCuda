@@ -19,6 +19,7 @@ add_executable(parallel
         src/sequential/TimerCPU.cpp
         src/sequential/TimerCPU.h
         src/parallel/sort.cuh
+        src/parallel/bitonicSortGPU.cuh
 )
 
 # Ensure that the target supports CUDA separable compilation

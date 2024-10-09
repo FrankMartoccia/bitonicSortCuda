@@ -135,8 +135,8 @@ bool compareArrays(const uint32_t* array1, const uint32_t* array2, const unsigne
 From provided number of threads in thread block, number of elements processed by one thread and array length
 calculates the offset and length of data block, which is processed by current thread block.
 */
-template <unsigned int numThreads, unsigned int elemsThread>
-__device__ void calcDataBlockLength(unsigned int &offset, unsigned int &dataBlockLength, unsigned int arrayLength)
+__device__ void calcDataBlockLength(unsigned int &offset, unsigned int &dataBlockLength, unsigned int arrayLength,
+	unsigned int numThreads, unsigned int elemsThread)
 {
 	unsigned int elemsPerThreadBlock = numThreads * elemsThread;
 	offset = blockIdx.x * elemsPerThreadBlock;
@@ -146,8 +146,7 @@ __device__ void calcDataBlockLength(unsigned int &offset, unsigned int &dataBloc
 /*
 Compares 2 elements and exchanges them according to sortOrder.
 */
-template <int sortOrder>
-__device__ void compareExchange(uint32_t *elem1, uint32_t *elem2)
+__device__ void compareExchange(uint32_t *elem1, uint32_t *elem2, int sortOrder)
 {
 	if (sortOrder == ORDER_ASC ? (*elem1 > *elem2) : (*elem1 < *elem2))
 	{
