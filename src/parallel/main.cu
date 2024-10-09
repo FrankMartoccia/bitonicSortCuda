@@ -15,12 +15,13 @@ void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder) 
     uint32_t *values = new uint32_t[arrayLength * sizeof(uint32_t)];
     uint32_t *valuesCopy = new uint32_t[arrayLength * sizeof(uint32_t)];
 
+    Sort sortInstance = Sort(nullptr, values, arrayLength, sortOrder);
+
     for (unsigned int iter = 0; iter < testRepetitions; iter++)
     {
         std::cout << "Iteration " << iter << " --- ";
         fillArray(values, arrayLength);
         std::copy(values, values + arrayLength, valuesCopy);
-        Sort sortInstance = Sort(nullptr, values, arrayLength, sortOrder);
         sortInstance.sort();
 
         quickSort(valuesCopy, arrayLength, sortOrder);
@@ -33,6 +34,9 @@ void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder) 
             std::cout << "false" << std::endl;
         }
     }
+
+    delete[] values;
+    delete[] valuesCopy;
 
 }
 
@@ -51,7 +55,7 @@ int main(int argc, char* argv[])
     // How many times is the sorting algorithm test repeated
     unsigned int testRepetitions = atoi(argv[2]);
     // Sort order of the data
-    int sortOrder = argc == 3 ? ORDER_ASC : (int)atoi(argv[3]);
+    int sortOrder = argc == 3 ? ORDER_ASC : atoi(argv[3]);
 
     run(arrayLength, testRepetitions, sortOrder);
 }

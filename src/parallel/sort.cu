@@ -111,6 +111,7 @@ void Sort::sort()
     checkCudaError(error);
 
     timer_gpu.stop();
+    std::cout << "Sorting time: " <<  timer_gpu.getElapsedMilliseconds() << " ms" << std::endl;
 
     memoryCopyAfterSort();
 }
