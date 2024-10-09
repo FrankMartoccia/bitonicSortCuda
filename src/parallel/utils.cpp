@@ -44,7 +44,7 @@ cudaDeviceProp getCudaDeviceProp(unsigned int deviceIndex)
 	return deviceProp;
 }
 
-void fillArrayKeyOnly(uint32_t* keys, unsigned int tableLen, unsigned int interval)
+void fillArray(uint32_t* keys, unsigned int tableLen)
 {
 	// Use high-resolution clock to generate a seed for randomness
 	auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -53,7 +53,7 @@ void fillArrayKeyOnly(uint32_t* keys, unsigned int tableLen, unsigned int interv
 	std::mt19937 generator(seed);
 
 	// Define the distribution range (0 to interval)
-	std::uniform_int_distribution<uint32_t> distribution(0, interval);
+	std::uniform_int_distribution<uint32_t> distribution(0, UINT32_MAX);
 
 	// Fill the array with random numbers within the specified interval
 	for (unsigned int i = 0; i < tableLen; ++i)

@@ -2,7 +2,6 @@
 #define SORT_CUH
 
 #include <cstdint>
-#include <cuda_runtime.h>
 
 // Declaration of the Sort class
 class Sort {
@@ -14,7 +13,7 @@ public:
     ~Sort();
 
     // Method for allocating memory
-    void memoryAllocate(unsigned int arrayLength);
+    void memoryAllocate();
 
     void memoryCopyBeforeSort() const;
     void memoryCopyAfterSort() const;
@@ -24,7 +23,7 @@ public:
 
     void sortValues();
 
-    void sort(unsigned int arrayLength);
+    void sort();
 
 private:
     uint32_t *_d_values; // Private member variable to hold device values

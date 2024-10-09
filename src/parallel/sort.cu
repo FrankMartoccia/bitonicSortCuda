@@ -33,9 +33,9 @@ Sort::~Sort() {
 }
 
 // Method for allocating memory
-void Sort::memoryAllocate(unsigned int arrayLength) {
+void Sort::memoryAllocate() {
     // Allocates memory for values on the device
-    const cudaError_t error = cudaMalloc((void **)&_d_values, arrayLength * sizeof(*_d_values));
+    const cudaError_t error = cudaMalloc((void **)&_d_values, _array_length * sizeof(*_d_values));
     checkCudaError(error);
 }
 
@@ -93,16 +93,11 @@ void Sort::sortValues()
 Wrapper method, which executes all needed memory management and timing. Also calls private sort.
 *** Call the constructor first ***
 */
-void Sort::sort(unsigned int arrayLength)
+void Sort::sort()
 {
+    memoryAllocate();
     cudaError_t error;
 
-    if (arrayLength > _array_length)
-    {
-        memoryAllocate(arrayLength);
-    }
-
-    // setPrivateVars(h_keys, NULL, arrayLength, sortOrder);
     memoryCopyBeforeSort();
 
     error = cudaDeviceSynchronize();

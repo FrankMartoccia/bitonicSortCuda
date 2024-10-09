@@ -4,11 +4,11 @@
 #include <string>
 #include <cuda_runtime.h>
 
-
 bool createFolder(char* folderName);
 void appendToFile(const std::string& fileName, const std::string& text);
 void checkMallocError(const void *ptr);
 cudaDeviceProp getCudaDeviceProp(unsigned int deviceIndex);
+void fillArray(uint32_t* keys, unsigned int tableLen);
 void quickSort(uint32_t *dataTable, unsigned int tableLen, int sortOrder);
 int compareAsc(const void* elem1, const void* elem2);
 int compareDesc(const void* elem1, const void* elem2);
