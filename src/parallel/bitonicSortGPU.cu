@@ -1,4 +1,4 @@
-#include "utils.h"
+#include "utils.cuh"
 #include "constants.h"
 #include "cuda_runtime.h"
 /*

@@ -1,9 +1,8 @@
-#include "utils.h"
+#include "utils.cuh"
 #include "constants.h"
 
 #include <fstream>
 #include <iostream>
-#include <cuda_runtime.h>
 #include <filesystem>
 #include <chrono>
 #include <random>

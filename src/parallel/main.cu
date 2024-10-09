@@ -1,10 +1,12 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <iostream>
+#include <ostream>
 
 #include "constants.h"
 #include "sort.cuh"
-#include "utils.h"
+#include "utils.cuh"
 
 void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder) {
 
@@ -15,10 +17,21 @@ void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder) 
 
     for (unsigned int iter = 0; iter < testRepetitions; iter++)
     {
+        std::cout << "Iteration " << iter << " --- ";
         fillArray(values, arrayLength);
         std::copy(values, values + arrayLength, valuesCopy);
         Sort sortInstance = Sort(nullptr, values, arrayLength, sortOrder);
         sortInstance.sort();
+
+        quickSort(valuesCopy, arrayLength, sortOrder);
+
+        bool isCorrect = compareArrays(values, valuesCopy, arrayLength);
+        std::cout << "Is correct: ";
+        if (isCorrect) {
+            std::cout << "true" << std::endl;
+        } else {
+            std::cout << "false" << std::endl;
+        }
     }
 
 }

@@ -12,7 +12,7 @@ void fillArray(uint32_t* keys, unsigned int tableLen);
 void quickSort(uint32_t *dataTable, unsigned int tableLen, int sortOrder);
 int compareAsc(const void* elem1, const void* elem2);
 int compareDesc(const void* elem1, const void* elem2);
-bool compareArrays(uint32_t* array1, uint32_t* array2, unsigned int arrayLen);
+bool compareArrays(const uint32_t* array1, const uint32_t* array2, unsigned int arrayLen);
 __device__ void calcDataBlockLength(unsigned int &offset, unsigned int &dataBlockLength, unsigned int tableLen,
     unsigned int numThreads, unsigned int elemsThread);
 __device__ void compareExchange(uint32_t *elem1, uint32_t *elem2, int sortOrder);
