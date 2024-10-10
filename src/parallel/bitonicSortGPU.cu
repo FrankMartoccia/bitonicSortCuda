@@ -1,6 +1,7 @@
 #include "utils.cuh"
 #include "constants.h"
 #include "cuda_runtime.h"
+
 /*
 Executes one step of bitonic merge.
 "OffsetGlobal" is needed to calculate correct thread index for global bitonic merge.
@@ -19,9 +20,9 @@ __device__ void bitonicMergeStep(
 
         // In NORMALIZED bitonic sort, first STEP of every PHASE demands different offset than all other
         // STEPS. Also, in first step of every phase, offset sizes are generated in ASCENDING order
-        // (normalized bitnic sort requires DESCENDING order). Because of that, we can break the loop if
+        // (normalized bitonic sort requires DESCENDING order). Because of that, we can break the loop if
         // index + offset >= length (bellow). If we want to generate offset sizes in ASCENDING order,
-        // than thread indexes inside every sub-block have to be reversed.
+        // then thread indexes inside every sub-block have to be reversed.
         if (isFirstStepOfPhase)
         {
             offset = ((indexThread & (stride - 1)) << 1) + 1;
@@ -127,8 +128,7 @@ void runBitonicMergeGlobalKernel(uint32_t *d_values, unsigned int arrayLength, u
     dim3 dimGrid((arrayLength - 1) / elemsPerThreadBlock + 1, 1, 1);
     dim3 dimBlock(THREADS_GLOBAL_MERGE, 1, 1);
 
-    bool isFirstStepOfPhase = phase == step;
-    if (isFirstStepOfPhase)
+    if (phase == step)
         {
             bitonicMergeGlobalKernel
                 <<<dimGrid, dimBlock>>>(
@@ -151,8 +151,8 @@ void bitonicSortParallel(uint32_t *d_values, unsigned int array_length, int sort
     unsigned int elemsPerBlockBitonicSort = THREADS_BITONIC_SORT * ELEMENTS_BITONIC_SORT;
 
     // Number of phases, which can be executed in shared memory (stride is lower than shared memory size)
-    unsigned int phasesBitonicSort = log2((double)min(arrayLenPower2, elemsPerBlockBitonicSort));
-    unsigned int phasesAll = log2((double)arrayLenPower2);
+    unsigned int phasesBitonicSort = log2(static_cast<double>(min(arrayLenPower2, elemsPerBlockBitonicSort)));
+    unsigned int phasesAll = log2(static_cast<double>(arrayLenPower2));
 
     // Sorts blocks of input data with bitonic sort
     runBitonicSortKernel(

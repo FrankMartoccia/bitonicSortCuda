@@ -1,13 +1,12 @@
 #include "TimerCPU.h"
 
-// Constructor
-TimerCPU::TimerCPU()
-{
-    reset();
-}
+// // Constructor
+// TimerCPU::TimerCPU()
+// {
+// }
 
 // Resets the timer
-void TimerCPU::reset()
+void TimerCPU::start()
 {
     m_StartingTime = std::chrono::high_resolution_clock::now();
 }

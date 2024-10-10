@@ -6,9 +6,9 @@
 class TimerCPU
 {
 public:
-    TimerCPU();
+    // TimerCPU();
 
-    void reset();
+    void start();
 
     float getElapsedMilliseconds() const;
 

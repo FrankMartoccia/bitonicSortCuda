@@ -1,4 +1,4 @@
-#include "sort.cuh"
+#include "Sort.cuh"
 #include "constants.h"
 #include <iostream>
 
@@ -25,11 +25,6 @@ Sort::Sort(uint32_t *d_values, uint32_t *h_values, unsigned int array_length, in
       _h_values(h_values),
       _array_length(array_length),
       _sort_order(sort_order){
-}
-
-// Destructor: Ensure that allocated memory is freed
-Sort::~Sort() {
-    memoryFree();
 }
 
 // Method for allocating memory
@@ -93,17 +88,16 @@ void Sort::sortValues()
 Wrapper method, which executes all needed memory management and timing. Also calls private sort.
 *** Call the constructor first ***
 */
-void Sort::sort()
+void Sort::sortGPU()
 {
     memoryAllocate();
-    cudaError_t error;
 
     memoryCopyBeforeSort();
 
-    error = cudaDeviceSynchronize();
+    cudaError_t error = cudaDeviceSynchronize();
     checkCudaError(error);
 
-    TimerGPU timer_gpu = TimerGPU();
+    TimerGPU timer_gpu;
     timer_gpu.start();
     sortValues();
 
@@ -111,7 +105,9 @@ void Sort::sort()
     checkCudaError(error);
 
     timer_gpu.stop();
-    std::cout << "Sorting time: " <<  timer_gpu.getElapsedMilliseconds() << " ms" << std::endl;
+    std::cout << "[GPU] - Sorting time: " <<  timer_gpu.getElapsedMilliseconds() << " ms" << std::endl;
 
     memoryCopyAfterSort();
+
+    memoryFree();
 }

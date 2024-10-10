@@ -5,40 +5,65 @@
 #include <ostream>
 
 #include "constants.h"
-#include "sort.cuh"
+#include "Sort.cuh"
 #include "utils.cuh"
+#include "../sequential/bitonicSortCPU.h"
+
+// Function to print array values
+void printArray(const uint32_t* array, unsigned int length, const std::string& arrayName) {
+    std::cout << arrayName << ": ";
+    for (unsigned int i = 0; i < length; i++) {
+        std::cout << array[i] << " ";
+    }
+    std::cout << std::endl;
+}
 
 void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder) {
+    // Allocate memory for arrays
+    uint32_t *values = new uint32_t[arrayLength];
+    uint32_t *valuesCopy = new uint32_t[arrayLength];
 
-    // createFolder();
-    // appendToFile();
-    uint32_t *values = new uint32_t[arrayLength * sizeof(uint32_t)];
-    uint32_t *valuesCopy = new uint32_t[arrayLength * sizeof(uint32_t)];
-
+    // Initialize the GPU Sort instance
     Sort sortInstance = Sort(nullptr, values, arrayLength, sortOrder);
 
-    for (unsigned int iter = 0; iter < testRepetitions; iter++)
-    {
-        std::cout << "Iteration " << iter << " --- ";
+    for (unsigned int iter = 0; iter < testRepetitions; iter++) {
+        std::cout << "Iteration " << iter << std::endl;
+
+        // Fill values array with random data
         fillArray(values, arrayLength);
-        std::copy(values, values + arrayLength, valuesCopy);
-        sortInstance.sort();
 
-        quickSort(valuesCopy, arrayLength, sortOrder);
+        // Copy values array to valuesCopy for CPU sorting
+        std::copy_n(values, arrayLength, valuesCopy);
 
-        bool isCorrect = compareArrays(values, valuesCopy, arrayLength);
-        std::cout << "Is correct: ";
-        if (isCorrect) {
-            std::cout << "true" << std::endl;
-        } else {
-            std::cout << "false" << std::endl;
-        }
+        // Print original values (unsorted)
+        // printArray(values, arrayLength, "Original (GPU Input)");
+        // printArray(valuesCopy, arrayLength, "Original (CPU Input)");
+
+        // Perform GPU sorting
+        sortInstance.sortGPU();
+
+        // Print values after GPU sort
+        // printArray(values, arrayLength, "Sorted by GPU");
+
+        // Perform CPU sorting using Bitonic Sort
+        sortCPU(valuesCopy, arrayLength, sortOrder);
+
+        // Print values after CPU sort
+        // printArray(valuesCopy, arrayLength, "Sorted by CPU");
+
+        // Verify the correctness of the sorting
+        bool isCorrect = std::equal(values, values + arrayLength, valuesCopy);
+
+        std::cout << "Is correct: " << (isCorrect ? "true" : "false") << std::endl;
+
+        std::cout << std::endl;
     }
 
+    // Free allocated memory
     delete[] values;
     delete[] valuesCopy;
-
 }
+
 
 int main(int argc, char* argv[])
 {

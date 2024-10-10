@@ -1,8 +1,8 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-constexpr int ORDER_ASC = 0;
-constexpr int ORDER_DESC = 1;
+constexpr int ORDER_ASC = 1;
+constexpr int ORDER_DESC = 0;
 
 constexpr int THREADS_BITONIC_SORT = 128;
 constexpr int ELEMENTS_BITONIC_SORT = 4;

@@ -10,7 +10,6 @@ public:
     // Constructor and Destructor
     Sort();
     Sort(uint32_t *d_values, uint32_t *h_values, unsigned int array_length, int sort_order);
-    ~Sort();
 
     // Method for allocating memory
     void memoryAllocate();
@@ -23,7 +22,7 @@ public:
 
     void sortValues();
 
-    void sort();
+    void sortGPU();
 
 private:
     uint32_t *_d_values; // Private member variable to hold device values
