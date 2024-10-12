@@ -2,10 +2,8 @@
 #include "TimerCPU.h"
 
 #include <cstdint>
-#include <algorithm> // for std::swap
+#include <algorithm>
 #include <iostream>
-
-using namespace std;
 
 /* The parameter dir indicates the sorting direction, ASCENDING (0)
    or DESCENDING (1); if (values[i] > values[j]) agrees with the direction,
@@ -15,7 +13,7 @@ void compAndSwap(uint32_t values[], unsigned int i, unsigned int j, int dir)
     // Sorting direction is controlled by dir (0 for ascending, 1 for descending)
     if (dir == (values[i] > values[j]))
     {
-        swap(values[i], values[j]);
+        std::swap(values[i], values[j]);
     }
 }
 
@@ -60,11 +58,13 @@ void bitonicSort(uint32_t values[], unsigned int low, unsigned int cnt, int dir)
 /* Caller function for bitonicSort.
    Sorts the entire array in ASCENDING order if sortOrder = 0,
    or in DESCENDING order if sortOrder = 1 */
-void sortCPU(uint32_t values[], unsigned int arrayLength, int sortOrder)
+float sortCPU(uint32_t values[], unsigned int arrayLength, int sortOrder)
 {
     TimerCPU timer_cpu;
     timer_cpu.start();
 
     bitonicSort(values, 0, arrayLength, sortOrder);
-    std::cout << "[CPU] - Sorting time: " << timer_cpu.getElapsedMilliseconds() << " ms" << std::endl;
+    float time = timer_cpu.getElapsedMilliseconds();
+    std::cout << "[CPU] - Sorting time: " << time << " ms" << std::endl;
+    return time;
 }

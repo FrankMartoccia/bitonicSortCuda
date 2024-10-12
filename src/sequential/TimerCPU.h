@@ -6,7 +6,6 @@
 class TimerCPU
 {
 public:
-    // TimerCPU();
 
     void start();
 

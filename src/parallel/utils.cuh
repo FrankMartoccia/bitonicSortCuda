@@ -4,8 +4,13 @@
 #include <string>
 #include <cuda_runtime.h>
 
-bool createFolder(char* folderName);
-void appendToFile(const std::string& fileName, const std::string& text);
+std::string getCurrentDirectory();
+std::string getResultFilename(unsigned int arrayLength);
+void ensureDirectoryExists(const std::string& filePath);
+void writeResultToFile(const std::string& filename, unsigned int arrayLength, int iteration,
+                       double gpuTime, float cpuTime, bool isCorrect);
+void initializeResultFile(const std::string& filename, unsigned int arrayLength,
+                          unsigned int testRepetitions, int sortOrder);
 void checkMallocError(const void *ptr);
 cudaDeviceProp getCudaDeviceProp(unsigned int deviceIndex);
 void fillArray(uint32_t* keys, unsigned int tableLen);

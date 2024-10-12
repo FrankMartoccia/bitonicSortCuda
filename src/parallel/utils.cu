@@ -7,21 +7,66 @@
 #include <chrono>
 #include <random>
 
-bool createFolder(const std::string &folderName)
-{
-	return std::filesystem::create_directory(folderName);
+namespace fs = std::filesystem;
+
+std::string getCurrentDirectory() {
+	return fs::current_path().string();
 }
 
-/*
-Appends provided text to file.
-*/
-void appendToFile(const std::string &fileName, const std::string &text)
-{
-	std::ofstream file;
-	file.open(fileName, std::fstream::app);
+std::string getResultFilename(unsigned int arrayLength) {
+    int log2Length = static_cast<int>(std::log2(arrayLength));
+    std::stringstream ss;
+    ss << "../results/sorting_results_" << log2Length << ".csv";
+    return ss.str();
+}
 
-	file << text;
-	file.close();
+void ensureDirectoryExists(const std::string& filePath) {
+    fs::path dir = fs::path(filePath).parent_path();
+    if (!exists(dir)) {
+        create_directories(dir);
+    }
+}
+
+void writeResultToFile(const std::string& filename, unsigned int arrayLength, int iteration,
+					   double gpuTime, float cpuTime, bool isCorrect) {
+	ensureDirectoryExists(filename);
+	std::ofstream outFile(filename, std::ios::app);  // Open file in append mode
+	if (!outFile) {
+		std::cerr << "Failed to open file: " << filename << std::endl;
+		return;
+	}
+
+	// Get current timestamp
+	auto now = std::chrono::system_clock::now();
+	auto time = std::chrono::system_clock::to_time_t(now);
+
+	std::stringstream ss;
+	ss << std::put_time(std::localtime(&time), "%Y-%m-%d %H:%M:%S");
+
+	outFile << ss.str() << ","
+			<< arrayLength << ","
+			<< iteration << ","
+			<< gpuTime << ","
+			<< cpuTime << ","
+			<< (isCorrect ? "true" : "false") << std::endl;
+
+	outFile.close();
+}
+
+void initializeResultFile(const std::string& filename, unsigned int arrayLength, unsigned int testRepetitions, int sortOrder) {
+	ensureDirectoryExists(filename);
+	std::ofstream outFile(filename);
+	if (!outFile) {
+		std::cerr << "Failed to open file: " << filename << std::endl;
+		return;
+	}
+
+	outFile << "Array Length: " << arrayLength << std::endl;
+	outFile << "Test Repetitions: " << testRepetitions << std::endl;
+	outFile << "Sort Order: " << (sortOrder == ORDER_ASC ? "Ascending\n" : "Descending\n") << std::endl;
+	outFile << "Timestamp,Array Length,Iteration,GPU Time (ms),CPU Time (ms),Is Correct" << std::endl;
+
+	outFile.close();
 }
 
 /*
@@ -65,79 +110,9 @@ void sortVerification(uint32_t* dataTable, const unsigned int tableLen, int sort
 	if (sortOrder == ORDER_ASC) {
 		std::sort(dataTable, dataTable + tableLen);  // Default is ascending
 	} else {
-		std::sort(dataTable, dataTable + tableLen, std::greater<uint32_t>());  // Use greater<> for descending
+		std::sort(dataTable, dataTable + tableLen, std::greater());  // Use greater<> for descending
 	}
 }
-
-
-// /*
-// Sorts an array with C quicksort implementation.
-// */
-// void quickSort(uint32_t *dataTable, const unsigned int tableLen, int sortOrder)
-// {
-//     if (sortOrder == ORDER_ASC)
-//     {
-//         qsort(dataTable, tableLen, sizeof(*dataTable), compareAsc);
-//     }
-//     else
-//     {
-//         qsort(dataTable, tableLen, sizeof(*dataTable), compareDesc);
-//     }
-// }
-//
-// /*
-// Compare function for ASCENDING order needed for C++ qsort.
-// */
-// int compareAsc(const void* elem1, const void* elem2)
-// {
-// 	// Cannot use subtraction because of unsigned data types. Another option would be to convert to bigger data
-// 	// type, but the result has to be converted to int.
-// 	if (*(uint32_t*)elem1 > *(uint32_t*)elem2)
-// 	{
-// 		return 1;
-// 	}
-// 	if (*(uint32_t*)elem1 < *(uint32_t*)elem2)
-// 	{
-// 		return -1;
-// 	}
-//
-// 	return 0;
-// }
-//
-// /*
-// Compare function for DESCENDING order needed for C++ qsort.
-// */
-// int compareDesc(const void* elem1, const void* elem2)
-// {
-// 	// Cannot use subtraction because of unsigned data types. Another option would be to convert to bigger data
-// 	// type, but the result has to be converted to int.
-// 	if (*(uint32_t*)elem1 < *(uint32_t*)elem2)
-// 	{
-// 		return 1;
-// 	}
-// 	if (*(uint32_t*)elem1 > *(uint32_t*)elem2)
-// 	{
-// 		return -1;
-// 	}
-//
-// 	return 0;
-// }
-
-/*
-Compares two arrays and prints out if they are the same or if they differ.
-*/
-// bool compareArrays(const uint32_t* array1, const uint32_t* array2, const unsigned int arrayLen)
-// {
-// 	for (unsigned int i = 0; i < arrayLen; i++)
-// 	{
-// 		if (array1[i] != array2[i])
-// 		{
-// 			return false;
-// 		}
-// 	}
-//
-// 	return true;
-// }
 
 /*
 From provided number of threads in thread block, number of elements processed by one thread and array length

@@ -1,10 +1,5 @@
 #include "TimerCPU.h"
 
-// // Constructor
-// TimerCPU::TimerCPU()
-// {
-// }
-
 // Resets the timer
 void TimerCPU::start()
 {

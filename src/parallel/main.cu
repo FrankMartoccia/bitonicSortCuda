@@ -19,6 +19,17 @@ void printArray(const uint32_t* array, unsigned int length, const std::string& a
 }
 
 void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder) {
+    // Print current working directory
+    std::cout << "Current working directory: " << getCurrentDirectory() << std::endl;
+
+    // Get the result filename
+    const std::string resultFilename = getResultFilename(arrayLength);
+
+    std::cout << "Results will be saved in: " << resultFilename << std::endl;
+
+    // Initialize result file
+    initializeResultFile(resultFilename, arrayLength, testRepetitions, sortOrder);
+
     // Allocate memory for arrays
     uint32_t *values = new uint32_t[arrayLength];
     uint32_t *valuesCopy = new uint32_t[arrayLength];
@@ -35,28 +46,20 @@ void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder) 
         // Copy values array to valuesCopy for CPU sorting
         std::copy_n(values, arrayLength, valuesCopy);
 
-        // Print original values (unsorted)
-        // printArray(values, arrayLength, "Original (GPU Input)");
-        // printArray(valuesCopy, arrayLength, "Original (CPU Input)");
-
         // Perform GPU sorting
-        sortInstance.sortGPU();
-
-        // Print values after GPU sort
-        // printArray(values, arrayLength, "Sorted by GPU");
+        float gpuTime = sortInstance.sortGPU();
 
         // Perform CPU sorting using Bitonic Sort
-        sortCPU(valuesCopy, arrayLength, sortOrder);
-
-        // Print values after CPU sort
-        // printArray(valuesCopy, arrayLength, "Sorted by CPU");
+        float cpuTime = sortCPU(valuesCopy, arrayLength, sortOrder);
 
         // Verify the correctness of the sorting
         bool isCorrect = std::equal(values, values + arrayLength, valuesCopy);
 
         std::cout << "Is correct: " << (isCorrect ? "true" : "false") << std::endl;
-
         std::cout << std::endl;
+
+        // Write results to file
+        writeResultToFile(resultFilename, arrayLength, iter, gpuTime, cpuTime, isCorrect);
     }
 
     // Free allocated memory
@@ -70,8 +73,10 @@ int main(int argc, char* argv[])
     if (argc < 3 || argc > 4)
     {
         printf(
-            "Two mandatory and one optional argument has to be specified:\n1. array length\n2. number of test "
-            "repetitions\n3. sort order (0 - ASC, 1 - DESC), optional, default ASC\n"
+            "Two mandatory and one optional argument has to be specified:\n"
+            "1. Array length\n"
+            "2. Number of test repetitions\n"
+            "3. Sort order (0 - ASC, 1 - DESC), optional, default ASC\n"
         );
         exit(EXIT_FAILURE);
     }

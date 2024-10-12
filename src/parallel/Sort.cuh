@@ -22,7 +22,7 @@ public:
 
     void sortValues();
 
-    void sortGPU();
+    float sortGPU();
 
 private:
     uint32_t *_d_values; // Private member variable to hold device values

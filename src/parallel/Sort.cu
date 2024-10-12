@@ -88,7 +88,7 @@ void Sort::sortValues()
 Wrapper method, which executes all needed memory management and timing. Also calls private sort.
 *** Call the constructor first ***
 */
-void Sort::sortGPU()
+float Sort::sortGPU()
 {
     memoryAllocate();
 
@@ -105,9 +105,12 @@ void Sort::sortGPU()
     checkCudaError(error);
 
     timer_gpu.stop();
-    std::cout << "[GPU] - Sorting time: " <<  timer_gpu.getElapsedMilliseconds() << " ms" << std::endl;
+    const float time = timer_gpu.getElapsedMilliseconds();
+    std::cout << "[GPU] - Sorting time: " << time  << " ms" << std::endl;
 
     memoryCopyAfterSort();
 
     memoryFree();
+
+    return time;
 }

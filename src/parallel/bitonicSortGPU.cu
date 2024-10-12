@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "utils.cuh"
 #include "constants.h"
 #include "cuda_runtime.h"
@@ -21,7 +23,7 @@ __device__ void bitonicMergeStep(
         // In NORMALIZED bitonic sort, first STEP of every PHASE demands different offset than all other
         // STEPS. Also, in first step of every phase, offset sizes are generated in ASCENDING order
         // (normalized bitonic sort requires DESCENDING order). Because of that, we can break the loop if
-        // index + offset >= length (bellow). If we want to generate offset sizes in ASCENDING order,
+        // index + offset >= length (below). If we want to generate offset sizes in ASCENDING order,
         // then thread indexes inside every sub-block have to be reversed.
         if (isFirstStepOfPhase)
         {
