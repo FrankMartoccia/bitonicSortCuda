@@ -4,88 +4,89 @@
 #include <iostream>
 #include <ostream>
 
-#include "constants.h"
-#include "Sort.cuh"
-#include "utils.cuh"
-#include "../sequential/bitonicSortCPU.h"
+#include "constants.h"  // Constants used for sorting orders
+#include "Sort.cuh"     // Include the Sort class for GPU sorting
+#include "utils.cuh"    // Include utility functions for file handling, directory management, etc.
+#include "../sequential/bitonicSortCPU.h"  // Include CPU implementation of Bitonic Sort
 
-// Function to print array values
+// Function to print array values to the console
 void printArray(const uint32_t* array, unsigned int length, const std::string& arrayName) {
     std::cout << arrayName << ": ";
     for (unsigned int i = 0; i < length; i++) {
-        std::cout << array[i] << " ";
+        std::cout << array[i] << " ";  // Print each element in the array
     }
-    std::cout << std::endl;
+    std::cout << std::endl;  // End the line after printing the array
 }
 
+// Function to run sorting tests
 void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder) {
-    // Print current working directory
+    // Print the current working directory
     std::cout << "Current working directory: " << getCurrentDirectory() << std::endl;
 
-    // Get the result filename
+    // Get the result filename based on array length
     const std::string resultFilename = getResultFilename(arrayLength);
-
     std::cout << "Results will be saved in: " << resultFilename << std::endl;
 
-    // Initialize result file
+    // Initialize the result file with metadata
     initializeResultFile(resultFilename, arrayLength, testRepetitions, sortOrder);
 
-    // Allocate memory for arrays
-    uint32_t *values = new uint32_t[arrayLength];
-    uint32_t *valuesCopy = new uint32_t[arrayLength];
+    // Allocate memory for the input array and a copy for CPU sorting
+    uint32_t *values = new uint32_t[arrayLength];        // Array to hold values for GPU sorting
+    uint32_t *valuesCopy = new uint32_t[arrayLength];   // Copy of the array for CPU sorting
 
-    // Initialize the GPU Sort instance
+    // Initialize the GPU Sort instance with the values array
     Sort sortInstance = Sort(nullptr, values, arrayLength, sortOrder);
 
+    // Loop for the specified number of test repetitions
     for (unsigned int iter = 0; iter < testRepetitions; iter++) {
         std::cout << "Iteration " << iter << std::endl;
 
-        // Fill values array with random data
+        // Fill the values array with random data
         fillArray(values, arrayLength);
 
-        // Copy values array to valuesCopy for CPU sorting
+        // Copy the values array to the valuesCopy for CPU sorting
         std::copy_n(values, arrayLength, valuesCopy);
 
-        // Perform GPU sorting
+        // Perform sorting on the GPU
         float gpuTime = sortInstance.sortGPU();
 
-        // Perform CPU sorting using Bitonic Sort
+        // Perform sorting on the CPU using Bitonic Sort
         float cpuTime = sortCPU(valuesCopy, arrayLength, sortOrder);
 
-        // Verify the correctness of the sorting
+        // Verify the correctness of the sorting by comparing the two arrays
         bool isCorrect = std::equal(values, values + arrayLength, valuesCopy);
-
         std::cout << "Is correct: " << (isCorrect ? "true" : "false") << std::endl;
-        std::cout << std::endl;
+        std::cout << std::endl;  // Print a blank line for readability
 
-        // Write results to file
+        // Write the results of the current iteration to the result file
         writeResultToFile(resultFilename, arrayLength, iter, gpuTime, cpuTime, isCorrect);
     }
 
-    // Free allocated memory
+    // Free the allocated memory for both arrays
     delete[] values;
     delete[] valuesCopy;
 }
 
-
+// Main function: Entry point of the program
 int main(int argc, char* argv[])
 {
+    // Check if the number of arguments is correct
     if (argc < 3 || argc > 4)
     {
         printf(
             "Two mandatory and one optional argument has to be specified:\n"
             "1. Array length\n"
             "2. Number of test repetitions\n"
-            "3. Sort order (0 - ASC, 1 - DESC), optional, default ASC\n"
+            "3. Sort order (1 - ASC, 0 - DESC), optional, default is ASC\n"
         );
-        exit(EXIT_FAILURE);
+        exit(EXIT_FAILURE);  // Exit if the arguments are invalid
     }
 
-    unsigned int arrayLength = atoi(argv[1]);
-    // How many times is the sorting algorithm test repeated
-    unsigned int testRepetitions = atoi(argv[2]);
-    // Sort order of the data
-    int sortOrder = argc == 3 ? ORDER_ASC : atoi(argv[3]);
+    // Parse command line arguments
+    unsigned int arrayLength = atoi(argv[1]);  // Convert first argument to array length
+    unsigned int testRepetitions = atoi(argv[2]);  // Convert second argument to number of repetitions
+    int sortOrder = argc == 3 ? ORDER_ASC : atoi(argv[3]);  // Set sort order based on arguments
 
+    // Execute the sorting tests with the provided parameters
     run(arrayLength, testRepetitions, sortOrder);
 }

@@ -1,12 +1,11 @@
 #include "Sort.cuh"
 #include "constants.h"
 #include <iostream>
-
 #include "TimerGPU.cuh"
 #include "bitonicSortGPU.cuh"
 #include "cuda_runtime.h"
 
-// Error checking function (assuming it is defined somewhere in your project)
+// Error checking function for CUDA operations
 void checkCudaError(cudaError_t error)
 {
     if (error != cudaSuccess) {
@@ -15,102 +14,101 @@ void checkCudaError(cudaError_t error)
     }
 }
 
-// Constructor: Initialize variables as needed
-Sort::Sort(): _d_values(nullptr), _h_values(nullptr), _array_length(0), _sort_order(ORDER_ASC) {
+// Default Constructor: Initializes member variables to default values
+Sort::Sort() : _d_values(nullptr), _h_values(nullptr), _array_length(0), _sort_order(ORDER_ASC) {
 }
 
-// Parameterized Constructor: Initializes member variables
+// Parameterized Constructor: Initializes member variables with provided values
 Sort::Sort(uint32_t *d_values, uint32_t *h_values, unsigned int array_length, int sort_order)
     : _d_values(d_values),
       _h_values(h_values),
       _array_length(array_length),
-      _sort_order(sort_order){
+      _sort_order(sort_order) {
 }
 
-// Method for allocating memory
+// Method for allocating memory on the device for sorting
 void Sort::memoryAllocate() {
-    // Allocates memory for values on the device
+    // Allocates memory for device values
     const cudaError_t error = cudaMalloc((void **)&_d_values, _array_length * sizeof(*_d_values));
     checkCudaError(error);
 }
 
 /*
-Memory copy operations needed before sort. If sorting keys only, than "h_values" contains NULL.
-*/
+ * Memory copy operations needed before sorting.
+ * If sorting keys only, then "h_values" contains NULL.
+ */
 void Sort::memoryCopyBeforeSort() const {
-    // Copies values
+    // Copies data from host (_h_values) to device (_d_values)
     cudaError_t error = cudaMemcpy(
         _d_values, _h_values, _array_length * sizeof(*_d_values), cudaMemcpyHostToDevice
     );
     checkCudaError(error);
 }
 
+// Copies sorted data from device (_d_values) to host (_h_values)
 void Sort::memoryCopyAfterSort() const {
-    // Copies values
+    // Copies data from device to host
     cudaError_t error = cudaMemcpy(
         _h_values, _d_values, _array_length * sizeof(*_h_values), cudaMemcpyDeviceToHost
     );
     checkCudaError(error);
 }
 
-// Method for freeing allocated memory
+// Method for freeing allocated memory on the device
 void Sort::memoryFree() const {
-    {
-        if (_array_length == 0)
-        {
-            return;
-        }
-
-        // Destroy values
-        const cudaError_t error = cudaFree(_d_values);
-        checkCudaError(error);
+    if (_array_length == 0) {
+        return; // No memory to free if array length is 0
     }
+
+    // Frees the allocated device memory
+    const cudaError_t error = cudaFree(_d_values);
+    checkCudaError(error);
 }
 
 /*
-Wrapper for bitonic sort method.
-The code runs faster if arguments are passed to method. If members are accessed directly, code runs slower.
-*/
+ * Wrapper for the bitonic sort method.
+ * The code runs faster if arguments are passed to the method rather than accessing member variables directly.
+ */
 void Sort::sortValues()
 {
-
-    if (_sort_order == ORDER_ASC)
-    {
+    // Calls the bitonic sort function based on the specified sort order
+    if (_sort_order == ORDER_ASC) {
         bitonicSortParallel(_d_values, _array_length, ORDER_ASC);
-    }
-    else
-    {
+    } else {
         bitonicSortParallel(_d_values, _array_length, ORDER_DESC);
     }
 }
 
 /*
-Wrapper method, which executes all needed memory management and timing. Also calls private sort.
-*** Call the constructor first ***
-*/
+ * Wrapper method that executes all necessary memory management and timing.
+ * Also calls the private sort function.
+ *** Call the constructor first ***
+ */
 float Sort::sortGPU()
 {
-    memoryAllocate();
+    memoryAllocate(); // Allocate device memory for sorting
 
-    memoryCopyBeforeSort();
+    memoryCopyBeforeSort(); // Copy data from host to device before sorting
 
+    // Synchronize to ensure all operations are completed before starting the timer
     cudaError_t error = cudaDeviceSynchronize();
     checkCudaError(error);
 
-    TimerGPU timer_gpu;
-    timer_gpu.start();
-    sortValues();
+    TimerGPU timer_gpu; // Create a TimerGPU instance to measure sorting time
+    timer_gpu.start(); // Start the timer
+    sortValues(); // Perform sorting on GPU
 
+    // Synchronize to ensure sorting is complete before stopping the timer
     error = cudaDeviceSynchronize();
     checkCudaError(error);
 
-    timer_gpu.stop();
-    const float time = timer_gpu.getElapsedMilliseconds();
-    std::cout << "[GPU] - Sorting time: " << time  << " ms" << std::endl;
+    timer_gpu.stop(); // Stop the timer
+    const float time = timer_gpu.getElapsedMilliseconds(); // Get elapsed time in milliseconds
+    std::cout << "[GPU] - Sorting time: " << time << " ms" << std::endl; // Output sorting time
 
-    memoryCopyAfterSort();
+    memoryCopyAfterSort(); // Copy sorted data from device to host
 
-    memoryFree();
+    memoryFree(); // Free allocated device memory
 
-    return time;
+    return time; // Return the elapsed sorting time
 }

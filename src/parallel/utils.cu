@@ -6,13 +6,21 @@
 #include <filesystem>
 #include <chrono>
 #include <random>
+#include <sstream>
 
 namespace fs = std::filesystem;
 
+/*
+ * Returns the current working directory as a string.
+ */
 std::string getCurrentDirectory() {
 	return fs::current_path().string();
 }
 
+/*
+ * Generates the filename for the result file based on the array length.
+ * The filename is formatted as "sorting_results_<log2(arrayLength)>.csv".
+ */
 std::string getResultFilename(unsigned int arrayLength) {
     int log2Length = static_cast<int>(std::log2(arrayLength));
     std::stringstream ss;
@@ -20,6 +28,10 @@ std::string getResultFilename(unsigned int arrayLength) {
     return ss.str();
 }
 
+/*
+ * Ensures that the directory for the provided file path exists.
+ * If it doesn't exist, it creates the necessary directories.
+ */
 void ensureDirectoryExists(const std::string& filePath) {
     fs::path dir = fs::path(filePath).parent_path();
     if (!exists(dir)) {
@@ -27,7 +39,12 @@ void ensureDirectoryExists(const std::string& filePath) {
     }
 }
 
-void writeResultToFile(const std::string& filename, unsigned int arrayLength, int iteration,
+/*
+ * Writes the result of a sorting test to the specified file.
+ * The result includes array length, iteration, GPU time, CPU time, and a correctness flag.
+ * The results are appended to the file in CSV format.
+ */
+void writeResultToFile(const std::string& filename, unsigned int arrayLength, unsigned int iteration,
 					   double gpuTime, float cpuTime, bool isCorrect) {
 	ensureDirectoryExists(filename);
 	std::ofstream outFile(filename, std::ios::app);  // Open file in append mode
@@ -43,6 +60,7 @@ void writeResultToFile(const std::string& filename, unsigned int arrayLength, in
 	std::stringstream ss;
 	ss << std::put_time(std::localtime(&time), "%Y-%m-%d %H:%M:%S");
 
+	// Write data to the file
 	outFile << ss.str() << ","
 			<< arrayLength << ","
 			<< iteration << ","
@@ -53,6 +71,10 @@ void writeResultToFile(const std::string& filename, unsigned int arrayLength, in
 	outFile.close();
 }
 
+/*
+ * Initializes the result file by writing the metadata at the top.
+ * Includes array length, number of test repetitions, and sorting order.
+ */
 void initializeResultFile(const std::string& filename, unsigned int arrayLength, unsigned int testRepetitions, int sortOrder) {
 	ensureDirectoryExists(filename);
 	std::ofstream outFile(filename);
@@ -61,6 +83,7 @@ void initializeResultFile(const std::string& filename, unsigned int arrayLength,
 		return;
 	}
 
+	// Write metadata
 	outFile << "Array Length: " << arrayLength << std::endl;
 	outFile << "Test Repetitions: " << testRepetitions << std::endl;
 	outFile << "Sort Order: " << (sortOrder == ORDER_ASC ? "Ascending\n" : "Descending\n") << std::endl;
@@ -70,8 +93,9 @@ void initializeResultFile(const std::string& filename, unsigned int arrayLength,
 }
 
 /*
-Checks if there was an error.
-*/
+ * Checks if the memory allocation was successful.
+ * If the pointer is null, an error message is printed, and the program terminates.
+ */
 void checkMallocError(const void *ptr)
 {
 	if (ptr == nullptr)
@@ -81,6 +105,9 @@ void checkMallocError(const void *ptr)
 	}
 }
 
+/*
+ * Retrieves the CUDA device properties for the given device index.
+ */
 cudaDeviceProp getCudaDeviceProp(unsigned int deviceIndex)
 {
 	cudaDeviceProp deviceProp{};
@@ -88,6 +115,9 @@ cudaDeviceProp getCudaDeviceProp(unsigned int deviceIndex)
 	return deviceProp;
 }
 
+/*
+ * Fills an array of size tableLen with random 32-bit unsigned integers using a uniform distribution.
+ */
 void fillArray(uint32_t* keys, unsigned int tableLen)
 {
 	// Use high-resolution clock to generate a seed for randomness
@@ -96,16 +126,19 @@ void fillArray(uint32_t* keys, unsigned int tableLen)
 	// Create a random number generator with the seed
 	std::mt19937 generator(seed);
 
-	// Define the distribution range (0 to interval)
+	// Define the distribution range (0 to UINT32_MAX)
 	std::uniform_int_distribution<uint32_t> distribution(0, UINT32_MAX);
 
-	// Fill the array with random numbers within the specified interval
+	// Fill the array with random numbers
 	for (unsigned int i = 0; i < tableLen; ++i)
 	{
 		keys[i] = distribution(generator);
 	}
 }
 
+/*
+ * Sorts the array based on the sortOrder (ascending or descending) and verifies the result using std::sort.
+ */
 void sortVerification(uint32_t* dataTable, const unsigned int tableLen, int sortOrder) {
 	if (sortOrder == ORDER_ASC) {
 		std::sort(dataTable, dataTable + tableLen);  // Default is ascending
@@ -115,9 +148,9 @@ void sortVerification(uint32_t* dataTable, const unsigned int tableLen, int sort
 }
 
 /*
-From provided number of threads in thread block, number of elements processed by one thread and array length
-calculates the offset and length of data block, which is processed by current thread block.
-*/
+ * From the number of threads, elements per thread, and the array length, calculates the offset and length
+ * of the data block that will be processed by the current thread block.
+ */
 __device__ void calcDataBlockLength(unsigned int &offset, unsigned int &dataBlockLength, unsigned int arrayLength,
 	unsigned int numThreads, unsigned int elemsThread)
 {
@@ -127,8 +160,9 @@ __device__ void calcDataBlockLength(unsigned int &offset, unsigned int &dataBloc
 }
 
 /*
-Compares 2 elements and exchanges them according to sortOrder.
-*/
+ * Compares two elements and exchanges them based on the sorting order.
+ * If sortOrder is ascending, swaps if elem1 > elem2. If descending, swaps if elem1 < elem2.
+ */
 __device__ void compareExchange(uint32_t *elem1, uint32_t *elem2, int sortOrder)
 {
 	if (sortOrder == ORDER_ASC ? (*elem1 > *elem2) : (*elem1 < *elem2))
@@ -140,16 +174,18 @@ __device__ void compareExchange(uint32_t *elem1, uint32_t *elem2, int sortOrder)
 }
 
 /*
-Tests if number is power of 2.
-*/
+ * Checks if the given value is a power of two.
+ * Returns true if the value is a power of two; otherwise, false.
+ */
 bool isPowerOfTwo(unsigned int value)
 {
 	return (value != 0) && ((value & (value - 1)) == 0);
 }
 
 /*
-Return the next power of 2 for provided value. If value is already power of 2, it returns value.
-*/
+ * Returns the next power of two greater than or equal to the given value.
+ * If the value is already a power of two, it returns the value itself.
+ */
 unsigned int nextPowerOf2(unsigned int value)
 {
 	if (isPowerOfTwo(value))
