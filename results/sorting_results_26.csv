@@ -1,0 +1,14 @@
+Array Length: 67108864
+Test Repetitions: 5
+Sort Order: Ascending
+
+Grid Size: 131072
+Block Size: 128
+Threads: 16777216
+
+Timestamp,Array Length,Iteration,GPU Time (ms),CPU Time (ms),Is Correct
+2024-10-12 18:44:38,67108864,0,588.248,69749.4,true
+2024-10-12 18:45:49,67108864,1,585.926,69623,true
+2024-10-12 18:47:00,67108864,2,586.228,68516.9,true
+2024-10-12 18:48:10,67108864,3,585.623,68682.1,true
+2024-10-12 18:49:20,67108864,4,586.23,68142.5,true
