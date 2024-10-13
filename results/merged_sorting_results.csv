@@ -1,5 +1,5 @@
 Array Length: 2^12 = 4096
-Threads: 1024
+Threads:,1024
 
 Timestamp,Array Length,Iteration,GPU Time (ms),CPU Time (ms),Is Correct
 2024-10-13 16:16:36,4096,0,12.1938,1.27122,true
@@ -8,8 +8,9 @@ Timestamp,Array Length,Iteration,GPU Time (ms),CPU Time (ms),Is Correct
 2024-10-13 16:16:36,4096,3,0.09728,1.24802,true
 2024-10-13 16:16:36,4096,4,0.099328,1.24456,true
 
+
 Array Length: 2^14 = 16384
-Threads: 4096
+Threads:,4096
 
 Timestamp,Array Length,Iteration,GPU Time (ms),CPU Time (ms),Is Correct
 2024-10-13 16:16:36,16384,0,2.15552,6.55491,true
@@ -18,8 +19,9 @@ Timestamp,Array Length,Iteration,GPU Time (ms),CPU Time (ms),Is Correct
 2024-10-13 16:16:36,16384,3,0.241664,6.49449,true
 2024-10-13 16:16:36,16384,4,0.228352,6.42195,true
 
+
 Array Length: 2^16 = 65536
-Threads: 16384
+Threads:,16384
 
 Timestamp,Array Length,Iteration,GPU Time (ms),CPU Time (ms),Is Correct
 2024-10-13 16:16:36,65536,0,2.14624,31.723,true
@@ -28,8 +30,9 @@ Timestamp,Array Length,Iteration,GPU Time (ms),CPU Time (ms),Is Correct
 2024-10-13 16:16:37,65536,3,0.242944,31.5921,true
 2024-10-13 16:16:37,65536,4,0.243968,31.624,true
 
+
 Array Length: 2^18 = 262144
-Threads: 65536
+Threads:,65536
 
 Timestamp,Array Length,Iteration,GPU Time (ms),CPU Time (ms),Is Correct
 2024-10-13 16:16:37,262144,0,2.35837,149.875,true
@@ -38,8 +41,9 @@ Timestamp,Array Length,Iteration,GPU Time (ms),CPU Time (ms),Is Correct
 2024-10-13 16:16:37,262144,3,0.560224,150.691,true
 2024-10-13 16:16:38,262144,4,0.555488,152.753,true
 
+
 Array Length: 2^20 = 1048576
-Threads: 262144
+Threads:,262144
 
 Timestamp,Array Length,Iteration,GPU Time (ms),CPU Time (ms),Is Correct
 2024-10-13 16:46:00,1048576,0,11.8012,664.592,true
@@ -48,8 +52,9 @@ Timestamp,Array Length,Iteration,GPU Time (ms),CPU Time (ms),Is Correct
 2024-10-13 16:46:02,1048576,3,1.62464,668.024,true
 2024-10-13 16:46:03,1048576,4,1.62192,682.087,true
 
+
 Array Length: 2^22 = 4194304
-Threads: 1048576
+Threads:,1048576
 
 Timestamp,Array Length,Iteration,GPU Time (ms),CPU Time (ms),Is Correct
 2024-10-12 18:41:55,4194304,0,8.25661,3242.06,true
@@ -58,8 +63,9 @@ Timestamp,Array Length,Iteration,GPU Time (ms),CPU Time (ms),Is Correct
 2024-10-12 18:42:05,4194304,3,6.70093,3264.84,true
 2024-10-12 18:42:08,4194304,4,6.70294,3259.2,true
 
+
 Array Length: 2^24 = 16777216
-Threads: 4194304
+Threads:,4194304
 
 Timestamp,Array Length,Iteration,GPU Time (ms),CPU Time (ms),Is Correct
 2024-10-12 18:42:24,16777216,0,125.468,15174.2,true
@@ -68,8 +74,9 @@ Timestamp,Array Length,Iteration,GPU Time (ms),CPU Time (ms),Is Correct
 2024-10-12 18:43:11,16777216,3,123.298,15174.5,true
 2024-10-12 18:43:26,16777216,4,123.28,15528.7,true
 
+
 Array Length: 2^26 = 67108864
-Threads: 16777216
+Threads:,16777216
 
 Timestamp,Array Length,Iteration,GPU Time (ms),CPU Time (ms),Is Correct
 2024-10-12 18:44:38,67108864,0,588.248,69749.4,true
@@ -78,8 +85,9 @@ Timestamp,Array Length,Iteration,GPU Time (ms),CPU Time (ms),Is Correct
 2024-10-12 18:48:10,67108864,3,585.623,68682.1,true
 2024-10-12 18:49:20,67108864,4,586.23,68142.5,true
 
+
 Array Length: 2^28 = 268435456
-Threads: 67108864
+Threads:,67108864
 
 Timestamp,Array Length,Iteration,GPU Time (ms),CPU Time (ms),Is Correct
 2024-10-12 18:54:39,268435456,0,2814.51,311268,true
@@ -88,8 +96,9 @@ Timestamp,Array Length,Iteration,GPU Time (ms),CPU Time (ms),Is Correct
 2024-10-12 19:10:29,268435456,3,2740.92,307611,true
 2024-10-12 19:15:43,268435456,4,2739.06,307803,true
 
+
 Array Length: 2^30 = 1073741824
-Threads: 268435456
+Threads:,268435456
 
 Timestamp,Array Length,Iteration,GPU Time (ms),CPU Time (ms),Is Correct
 2024-10-12 19:40:10,1073741824,0,12634.9,1.4321e+06,true
@@ -97,4 +106,5 @@ Timestamp,Array Length,Iteration,GPU Time (ms),CPU Time (ms),Is Correct
 2024-10-12 20:28:41,1073741824,2,12614.1,1.42933e+06,true
 2024-10-12 20:52:51,1073741824,3,12639,1.42141e+06,true
 2024-10-12 21:16:49,1073741824,4,12624.1,1.41079e+06,true
+
 
