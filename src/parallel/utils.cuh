@@ -19,8 +19,8 @@ void writeResultToFile(const std::string& filename, unsigned int arrayLength, un
                        double gpuTime, float cpuTime, bool isCorrect);
 
 // Initializes a result file with metadata like array length, test repetitions, and sort order
-void initializeResultFile(const std::string& filename, unsigned int arrayLength,
-                          unsigned int testRepetitions, int sortOrder);
+void initializeResultFile(const std::string& filename, unsigned int arrayLength, unsigned int testRepetitions,
+                          int sortOrder, unsigned int gridSize, unsigned int blockSize);
 
 // Checks if a pointer was successfully allocated; prints an error and exits if not
 void checkMallocError(const void *ptr);

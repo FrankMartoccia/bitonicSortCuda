@@ -27,8 +27,12 @@ void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder) 
     const std::string resultFilename = getResultFilename(arrayLength);
     std::cout << "Results will be saved in: " << resultFilename << std::endl;
 
-    // Initialize the result file with metadata
-    initializeResultFile(resultFilename, arrayLength, testRepetitions, sortOrder);
+    // Compute block and grid sizes
+    unsigned int elemsPerThreadBlock = THREADS_BITONIC_SORT * ELEMENTS_BITONIC_SORT;
+    unsigned int gridSize = (arrayLength + elemsPerThreadBlock - 1) / elemsPerThreadBlock;
+
+    // Initialize result file with grid, block size, and thread info
+    initializeResultFile(resultFilename, arrayLength, testRepetitions, sortOrder, gridSize, THREADS_BITONIC_SORT);
 
     // Allocate memory for the input array and a copy for CPU sorting
     uint32_t *values = new uint32_t[arrayLength];        // Array to hold values for GPU sorting

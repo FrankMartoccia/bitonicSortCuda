@@ -71,11 +71,8 @@ void writeResultToFile(const std::string& filename, unsigned int arrayLength, un
 	outFile.close();
 }
 
-/*
- * Initializes the result file by writing the metadata at the top.
- * Includes array length, number of test repetitions, and sorting order.
- */
-void initializeResultFile(const std::string& filename, unsigned int arrayLength, unsigned int testRepetitions, int sortOrder) {
+void initializeResultFile(const std::string& filename, unsigned int arrayLength, unsigned int testRepetitions,
+                          int sortOrder, unsigned int gridSize, unsigned int blockSize) {
 	ensureDirectoryExists(filename);
 	std::ofstream outFile(filename);
 	if (!outFile) {
@@ -87,6 +84,13 @@ void initializeResultFile(const std::string& filename, unsigned int arrayLength,
 	outFile << "Array Length: " << arrayLength << std::endl;
 	outFile << "Test Repetitions: " << testRepetitions << std::endl;
 	outFile << "Sort Order: " << (sortOrder == ORDER_ASC ? "Ascending\n" : "Descending\n") << std::endl;
+
+	// Write grid, block, and thread information
+	outFile << "Grid Size: " << gridSize << std::endl;
+	outFile << "Block Size: " << blockSize << std::endl;
+	outFile << "Threads: " << gridSize * blockSize << "\n\n";
+
+	// Header for the results
 	outFile << "Timestamp,Array Length,Iteration,GPU Time (ms),CPU Time (ms),Is Correct" << std::endl;
 
 	outFile.close();
