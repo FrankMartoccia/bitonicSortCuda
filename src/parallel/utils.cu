@@ -155,10 +155,9 @@ void sortVerification(uint32_t* dataTable, const unsigned int tableLen, int sort
  * From the number of threads, elements per thread, and the array length, calculates the offset and length
  * of the data block that will be processed by the current thread block.
  */
-__device__ void calcDataBlockLength(unsigned int &offset, unsigned int &dataBlockLength, unsigned int arrayLength,
-	unsigned int numThreads, unsigned int elemsThread)
+__device__ void calcDataBlockLength(unsigned int &offset, unsigned int &dataBlockLength, unsigned int arrayLength)
 {
-	unsigned int elemsPerThreadBlock = numThreads * elemsThread;
+	unsigned int elemsPerThreadBlock = THREADS_BITONIC_SORT * ELEMENTS_BITONIC_SORT;
 	offset = blockIdx.x * elemsPerThreadBlock;
 	dataBlockLength =  offset + elemsPerThreadBlock <= arrayLength ? elemsPerThreadBlock : arrayLength - offset;
 }
