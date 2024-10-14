@@ -52,7 +52,7 @@ __global__ void normalizedBitonicSort(
     unsigned int offset, dataBlockLength;
 
     // Calculate block-specific data length
-    calcDataBlockLength(offset, dataBlockLength, arrayLength);
+    calcDataBlockLength(offset, dataBlockLength, arrayLength, THREADS_BITONIC_SORT, ELEMENTS_BITONIC_SORT);
 
     // Copy data from global memory to shared memory
     for (unsigned int tx = threadIdx.x; tx < dataBlockLength; tx += THREADS_BITONIC_SORT)
@@ -92,13 +92,13 @@ Global Bitonic Merge Kernel.
 Handles merging of data blocks larger than shared memory.
 */
 __global__ void bitonicMergeGlobalKernel(
-    uint32_t *dataTable, unsigned int tableLen, unsigned int step, int sortOrder, bool isFirstStepOfPhase)
+    uint32_t *dataTable, unsigned int arrayLength, unsigned int step, int sortOrder, bool isFirstStepOfPhase)
 {
     unsigned int offset, dataBlockLength;
-    calcDataBlockLength(offset, dataBlockLength, tableLen);
+    calcDataBlockLength(offset, dataBlockLength, arrayLength, THREADS_GLOBAL_MERGE, ELEMENTS_GLOBAL_MERGE);
 
     bitonicMergeStep(
-        dataTable, offset / 2, tableLen, dataBlockLength, 1 << (step - 1), sortOrder, isFirstStepOfPhase
+        dataTable, offset / 2, arrayLength, dataBlockLength, 1 << (step - 1), sortOrder, isFirstStepOfPhase
     );
 }
 

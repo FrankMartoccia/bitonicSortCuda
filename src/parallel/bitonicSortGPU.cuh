@@ -35,13 +35,13 @@ __global__ void normalizedBitonicSort(
 // Kernel function for global bitonic merge
 // This kernel handles the merging step for blocks of data larger than shared memory.
 // "dataTable" - Data array to merge.
-// "tableLen" - Length of the data table.
+// "arrayLength" - Length of the data table.
 // "step" - Current step of the merging phase.
 // "sortOrder" - Sorting order (ascending or descending).
 // "isFirstStepOfPhase" - Flag indicating if this is the first step of the phase.
 __global__ void bitonicMergeGlobalKernel(
     uint32_t *dataTable,
-    unsigned int tableLen,
+    unsigned int arrayLength,
     unsigned int step,
     int sortOrder,
     bool isFirstStepOfPhase

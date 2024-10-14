@@ -143,11 +143,11 @@ void fillArray(uint32_t* keys, unsigned int tableLen)
 /*
  * Sorts the array based on the sortOrder (ascending or descending) and verifies the result using std::sort.
  */
-void sortVerification(uint32_t* dataTable, const unsigned int tableLen, int sortOrder) {
+void sortVerification(uint32_t* dataTable, const unsigned int arrayLength, int sortOrder) {
 	if (sortOrder == ORDER_ASC) {
-		std::sort(dataTable, dataTable + tableLen);  // Default is ascending
+		std::sort(dataTable, dataTable + arrayLength);  // Default is ascending
 	} else {
-		std::sort(dataTable, dataTable + tableLen, std::greater());  // Use greater<> for descending
+		std::sort(dataTable, dataTable + arrayLength, std::greater());  // Use greater<> for descending
 	}
 }
 
@@ -155,9 +155,10 @@ void sortVerification(uint32_t* dataTable, const unsigned int tableLen, int sort
  * From the number of threads, elements per thread, and the array length, calculates the offset and length
  * of the data block that will be processed by the current thread block.
  */
-__device__ void calcDataBlockLength(unsigned int &offset, unsigned int &dataBlockLength, unsigned int arrayLength)
+__device__ void calcDataBlockLength(unsigned int &offset, unsigned int &dataBlockLength, unsigned int arrayLength,
+	unsigned int numThreads, unsigned int elemsThread)
 {
-	unsigned int elemsPerThreadBlock = THREADS_BITONIC_SORT * ELEMENTS_BITONIC_SORT;
+	unsigned int elemsPerThreadBlock = numThreads * elemsThread;
 	offset = blockIdx.x * elemsPerThreadBlock;
 	dataBlockLength =  offset + elemsPerThreadBlock <= arrayLength ? elemsPerThreadBlock : arrayLength - offset;
 }
