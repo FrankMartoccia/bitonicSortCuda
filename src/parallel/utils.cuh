@@ -22,12 +22,6 @@ void writeResultToFile(const std::string& filename, unsigned int arrayLength, un
 void initializeResultFile(const std::string& filename, unsigned int arrayLength, unsigned int testRepetitions,
                           int sortOrder, unsigned int gridSize, unsigned int blockSize);
 
-// Checks if a pointer was successfully allocated; prints an error and exits if not
-void checkMallocError(const void *ptr);
-
-// Returns the properties of a CUDA device specified by its index
-cudaDeviceProp getCudaDeviceProp(unsigned int deviceIndex);
-
 // Fills an array with random 32-bit unsigned integers
 void fillArray(uint32_t* keys, unsigned int tableLen);
 

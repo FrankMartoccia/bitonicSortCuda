@@ -23,11 +23,12 @@ __device__ void bitonicMergeStep(
         if (isFirstStepOfPhase)
         {
             // Calculate offset and reverse thread indices within sub-blocks for ascending order
-            offset = ((indexThread & (stride - 1)) << 1) + 1;
+            offset = ((indexThread % stride) * 2) + 1; // "+1 is added to have the offset odd"
             indexThread = (indexThread / stride) * stride + ((stride - 1) - (indexThread % stride));
         }
 
-        unsigned int index = (indexThread << 1) - (indexThread & (stride - 1));
+        // Calculate the index used in compareExchange()
+        unsigned int index = (indexThread * 2) - (indexThread % stride);
 
         // Check array bounds to avoid invalid memory access
         if (index + offset >= arrayLength)

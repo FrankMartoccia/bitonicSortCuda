@@ -97,29 +97,6 @@ void initializeResultFile(const std::string& filename, unsigned int arrayLength,
 }
 
 /*
- * Checks if the memory allocation was successful.
- * If the pointer is null, an error message is printed, and the program terminates.
- */
-void checkMallocError(const void *ptr)
-{
-	if (ptr == nullptr)
-	{
-		std::cerr << "Error in host malloc.\n";
-		exit(EXIT_FAILURE);
-	}
-}
-
-/*
- * Retrieves the CUDA device properties for the given device index.
- */
-cudaDeviceProp getCudaDeviceProp(unsigned int deviceIndex)
-{
-	cudaDeviceProp deviceProp{};
-	cudaGetDeviceProperties(&deviceProp, deviceIndex);
-	return deviceProp;
-}
-
-/*
  * Fills an array of size tableLen with random 32-bit unsigned integers using a uniform distribution.
  */
 void fillArray(uint32_t* keys, unsigned int tableLen)
