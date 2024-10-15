@@ -48,14 +48,23 @@ void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder) 
         // Fill the values array with random data
         fillArray(values, arrayLength);
 
+        // Debug print: Print the original (unsorted) array
+        // printArray(values, arrayLength, "Original Array");
+
         // Copy the values array to the valuesCopy for CPU sorting
         std::copy_n(values, arrayLength, valuesCopy);
 
         // Perform sorting on the GPU
         float gpuTime = sortInstance.sortGPU();
 
+        // Debug print: Print the GPU-sorted array
+        // printArray(values, arrayLength, "GPU Sorted Array");
+
         // Perform sorting on the CPU using Bitonic Sort
         float cpuTime = sortCPU(valuesCopy, arrayLength, sortOrder);
+
+        // Debug print: Print the CPU-sorted array
+        // printArray(valuesCopy, arrayLength, "CPU Sorted Array");
 
         // Verify the correctness of the sorting by comparing the two arrays
         bool isCorrect = std::equal(values, values + arrayLength, valuesCopy);

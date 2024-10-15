@@ -32,7 +32,7 @@ cudaDeviceProp getCudaDeviceProp(unsigned int deviceIndex);
 void fillArray(uint32_t* keys, unsigned int tableLen);
 
 // Sorts the array based on the provided sort order (ascending or descending) and verifies correctness
-void sortVerification(uint32_t *dataTable, unsigned int tableLen, int sortOrder);
+void sortVerification(uint32_t *dataTable, unsigned int arrayLength, int sortOrder);
 
 // Comparator for ascending order used in sort functions
 int compareAsc(const void* elem1, const void* elem2);
@@ -42,7 +42,7 @@ int compareDesc(const void* elem1, const void* elem2);
 
 // CUDA device function to calculate the offset and length of a data block handled by each thread block
 // based on the number of threads and elements per thread
-__device__ void calcDataBlockLength(unsigned int &offset, unsigned int &dataBlockLength, unsigned int tableLen,
+__device__ void calcDataBlockLength(unsigned int &offset, unsigned int &dataBlockLength, unsigned int arrayLength,
     unsigned int numThreads, unsigned int elemsThread);
 
 // CUDA device function to compare and exchange two elements based on the sorting order (ascending or descending)

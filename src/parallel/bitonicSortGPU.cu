@@ -9,12 +9,12 @@ This device function compares and exchanges two elements for each thread.
 "offsetGlobal" is the global index offset used for accessing the correct elements.
 */
 __device__ void bitonicMergeStep(
-    uint32_t *values, unsigned int offsetGlobal, unsigned int tableLen, unsigned int dataBlockLen, unsigned int stride, unsigned int threadsKernel,
+    uint32_t *values, unsigned int offsetGlobal, unsigned int arrayLength, unsigned int dataBlockLen, unsigned int stride,
     int sortOrder, bool isFirstStepOfPhase
 )
 {
     // Each thread will compare and exchange 2 elements in the bitonic merge step
-    for (unsigned int tx = threadIdx.x; tx < dataBlockLen >> 1; tx += threadsKernel)
+    for (unsigned int tx = threadIdx.x; tx < dataBlockLen >> 1; tx += THREADS_BITONIC_SORT)
     {
         unsigned int indexThread = offsetGlobal + tx;
         unsigned int offset = stride;
@@ -30,7 +30,7 @@ __device__ void bitonicMergeStep(
         unsigned int index = (indexThread << 1) - (indexThread & (stride - 1));
 
         // Check array bounds to avoid invalid memory access
-        if (index + offset >= tableLen)
+        if (index + offset >= arrayLength)
         {
             break;
         }
@@ -45,20 +45,19 @@ Normalized Bitonic Sort Kernel.
 This kernel sorts blocks of input data using shared memory for better performance.
 */
 __global__ void normalizedBitonicSort(
-    uint32_t *keysInput, uint32_t *keysOutput, uint32_t tableLen, unsigned int threadsBitonicSort,
-    unsigned int elemsBitonicSort, int sortOrder)
+    uint32_t *valuesGlobal, uint32_t arrayLength, int sortOrder)
 {
     // Shared memory to hold the tile being sorted
     extern __shared__ uint32_t bitonicSortTile[];
     unsigned int offset, dataBlockLength;
 
     // Calculate block-specific data length
-    calcDataBlockLength(offset, dataBlockLength, tableLen, threadsBitonicSort, elemsBitonicSort);
+    calcDataBlockLength(offset, dataBlockLength, arrayLength, THREADS_BITONIC_SORT, ELEMENTS_BITONIC_SORT);
 
     // Copy data from global memory to shared memory
-    for (unsigned int tx = threadIdx.x; tx < dataBlockLength; tx += threadsBitonicSort)
+    for (unsigned int tx = threadIdx.x; tx < dataBlockLength; tx += THREADS_BITONIC_SORT)
     {
-        bitonicSortTile[tx] = keysInput[offset + tx];
+        bitonicSortTile[tx] = valuesGlobal[offset + tx];
     }
     __syncthreads();
 
@@ -70,21 +69,21 @@ __global__ void normalizedBitonicSort(
             if (stride == subBlockSize)
             {
                 // First step of each phase
-                bitonicMergeStep(bitonicSortTile, 0, dataBlockLength, dataBlockLength, stride, threadsBitonicSort, sortOrder, true);
+                bitonicMergeStep(bitonicSortTile, 0, dataBlockLength, dataBlockLength, stride, sortOrder, true);
             }
             else
             {
                 // Subsequent steps
-                bitonicMergeStep(bitonicSortTile, 0, dataBlockLength, dataBlockLength, stride, threadsBitonicSort, sortOrder, false);
+                bitonicMergeStep(bitonicSortTile, 0, dataBlockLength, dataBlockLength, stride, sortOrder, false);
             }
             __syncthreads();
         }
     }
 
     // Copy the sorted data back to global memory
-    for (unsigned int tx = threadIdx.x; tx < dataBlockLength; tx += threadsBitonicSort)
+    for (unsigned int tx = threadIdx.x; tx < dataBlockLength; tx += THREADS_BITONIC_SORT)
     {
-        keysOutput[offset + tx] = bitonicSortTile[tx];
+        valuesGlobal[offset + tx] = bitonicSortTile[tx];
     }
 }
 
@@ -93,14 +92,13 @@ Global Bitonic Merge Kernel.
 Handles merging of data blocks larger than shared memory.
 */
 __global__ void bitonicMergeGlobalKernel(
-    uint32_t *dataTable, unsigned int tableLen, unsigned int step, unsigned int threadsMerge,
-    unsigned int elemsMerge, int sortOrder, bool isFirstStepOfPhase)
+    uint32_t *dataTable, unsigned int arrayLength, unsigned int step, int sortOrder, bool isFirstStepOfPhase)
 {
     unsigned int offset, dataBlockLength;
-    calcDataBlockLength(offset, dataBlockLength, tableLen, threadsMerge, elemsMerge);
+    calcDataBlockLength(offset, dataBlockLength, arrayLength, THREADS_GLOBAL_MERGE, ELEMENTS_GLOBAL_MERGE);
 
     bitonicMergeStep(
-        dataTable, offset / 2, tableLen, dataBlockLength, 1 << (step - 1), threadsMerge, sortOrder, isFirstStepOfPhase
+        dataTable, offset / 2, arrayLength, dataBlockLength, 1 << (step - 1), sortOrder, isFirstStepOfPhase
     );
 }
 
@@ -118,7 +116,7 @@ void runBitonicSortKernel(uint32_t *d_values, unsigned int arrayLength, int sort
 
     // Launch the normalized bitonic sort kernel
     normalizedBitonicSort <<<dimGrid, dimBlock, sharedMemSize>>>(
-        d_values, d_values, arrayLength, THREADS_BITONIC_SORT, ELEMENTS_BITONIC_SORT, sortOrder
+        d_values, arrayLength, sortOrder
     );
 }
 
@@ -136,7 +134,7 @@ void runBitonicMergeGlobalKernel(
 
     // Launch the global bitonic merge kernel
     bitonicMergeGlobalKernel <<<dimGrid, dimBlock>>>(
-        d_values, arrayLength, step, THREADS_GLOBAL_MERGE, ELEMENTS_GLOBAL_MERGE, sortOrder, phase == step
+        d_values, arrayLength, step, sortOrder, phase == step
     );
 }
 

@@ -143,11 +143,11 @@ void fillArray(uint32_t* keys, unsigned int tableLen)
 /*
  * Sorts the array based on the sortOrder (ascending or descending) and verifies the result using std::sort.
  */
-void sortVerification(uint32_t* dataTable, const unsigned int tableLen, int sortOrder) {
+void sortVerification(uint32_t* dataTable, const unsigned int arrayLength, int sortOrder) {
 	if (sortOrder == ORDER_ASC) {
-		std::sort(dataTable, dataTable + tableLen);  // Default is ascending
+		std::sort(dataTable, dataTable + arrayLength);  // Default is ascending
 	} else {
-		std::sort(dataTable, dataTable + tableLen, std::greater());  // Use greater<> for descending
+		std::sort(dataTable, dataTable + arrayLength, std::greater());  // Use greater<> for descending
 	}
 }
 
