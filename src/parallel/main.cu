@@ -55,7 +55,7 @@ void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder, 
         std::copy_n(values, arrayLength, valuesCopy);
 
         // Perform sorting on the GPU
-        // float gpuTime = sortInstance.sortGPU();
+        float gpuTime = sortInstance.sortGPU();
 
         // Debug print: Print the GPU-sorted array
         // printArray(values, arrayLength, "GPU Sorted Array");
@@ -67,12 +67,12 @@ void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder, 
         // printArray(valuesCopy, arrayLength, "CPU Sorted Array");
 
         // Verify the correctness of the sorting by comparing the two arrays
-        // bool isCorrect = std::equal(values, values + arrayLength, valuesCopy);
-        // std::cout << "Is correct: " << (isCorrect ? "true" : "false") << std::endl;
+        bool isCorrect = std::equal(values, values + arrayLength, valuesCopy);
+        std::cout << "Is correct: " << (isCorrect ? "true" : "false") << std::endl;
         std::cout << std::endl;  // Print a blank line for readability
 
         // Write the results of the current iteration to the result file
-        writeResultToFile(resultFilename, arrayLength, iter, 0, cpuTime, true);
+        writeResultToFile(resultFilename, arrayLength, iter, gpuTime, cpuTime, true);
     }
 
     // Free the allocated memory for both arrays
