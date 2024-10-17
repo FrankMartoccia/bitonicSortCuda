@@ -24,6 +24,13 @@ __device__ void bitonicMergeStep(
         {
             // Calculate offset and reverse thread indices within sub-blocks for ascending order
             offset = ((indexThread % stride) * 2) + 1; // "+1 is added to have the offset odd"
+            // Recalculate indexThread to mirror its corresponding index within the current stride group.
+            // 1. (indexThread / stride) * stride:
+            //    - Aligns indexThread to the start of its group (of size 'stride').
+            // 2. (indexThread % stride):
+            //    - Finds the relative position of indexThread within its group.
+            // 3. (stride - 1) - (indexThread % stride):
+            //    - Mirrors the thread's position within the group, reversing the order of threads in the current stride.
             indexThread = (indexThread / stride) * stride + ((stride - 1) - (indexThread % stride));
         }
 

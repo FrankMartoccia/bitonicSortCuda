@@ -3,74 +3,110 @@
 #include <cstdint>
 #include <algorithm>
 #include <iostream>
+#include <thread>
+#include <vector>
+#include <cmath>
+#include <limits>
 
-/*
-    Compares and swaps the elements at positions i and j in the array
-    based on the sorting direction (dir).
-    If dir = 1 (ascending) and values[i] > values[j], or
-    if dir = 0 (descending) and values[i] < values[j],
-    the elements are swapped.
-*/
-void compAndSwap(uint32_t values[], unsigned int i, unsigned int j, int dir)
+// This function is designed to be run in parallel by multiple threads. Each thread
+//  processes a chunk of the overall array, comparing and swapping elements to sort
+//  the bitonic sequence according to the current merge step.
+// The direction of the sort (ascending or descending) alternates within each bitonic sequence.
+void compareAndSwap(std::vector<uint32_t>& paddedValues, unsigned int threadId,
+                    unsigned int chunkSize, unsigned int mergeStep, unsigned int bitonicSequenceSize)
 {
-    // Swap elements if they are in the wrong order based on dir
-    if (dir == (values[i] > values[j]))
-    {
-        std::swap(values[i], values[j]);
-    }
-}
+    unsigned int startIndex = threadId * chunkSize;
+    unsigned int endIndex = (threadId + 1) * chunkSize;
 
-/*
-    Recursively merges a bitonic sequence into a sorted sequence.
-    The bitonic sequence is divided into two halves, which are merged
-    in the specified sorting direction (dir).
-
-    Parameters:
-    - low: starting index of the sequence
-    - cnt: number of elements to merge
-    - dir: sorting direction (1 for ascending, 0 for descending)
-*/
-void bitonicMerge(uint32_t values[], unsigned int low, unsigned int cnt, int dir)
-{
-    if (cnt > 1)
+    // Process the chunk assigned to this thread
+    for (unsigned int currentIndex = startIndex; currentIndex < endIndex; currentIndex++)
     {
-        unsigned int k = cnt / 2; // Split sequence into two halves
-        for (unsigned int i = low; i < low + k; i++)
+        // Find the element to compare with
+        unsigned int compareIndex = currentIndex ^ mergeStep;
+
+        // Only compare if the compareIndex is greater (to avoid duplicate swaps)
+        if (compareIndex > currentIndex)
         {
-            compAndSwap(values, i, i + k, dir); // Compare and swap elements between two halves
+            bool shouldSwap = false;
+
+            // Determine if we should swap based on the current subarray's sorting direction
+            if ((currentIndex & bitonicSequenceSize) == 0)  // First half of subarray (ascending)
+            {
+                shouldSwap = (paddedValues[currentIndex] > paddedValues[compareIndex]);
+            }
+            else  // Second half of subarray (descending)
+            {
+                shouldSwap = (paddedValues[currentIndex] < paddedValues[compareIndex]);
+            }
+
+            // Perform the swap if necessary
+            if (shouldSwap)
+            {
+                std::swap(paddedValues[currentIndex], paddedValues[compareIndex]);
+            }
         }
-        // Recursively merge both halves
-        bitonicMerge(values, low, k, dir);        // Merge the first half
-        bitonicMerge(values, low + k, k, dir);    // Merge the second half
     }
 }
 
-/*
-    Recursively sorts an array into a bitonic sequence.
-    The array is split into two halves: the first half is sorted in descending order
-    (dir = 0), and the second half is sorted in ascending order (dir = 1).
-    After sorting the two halves, the bitonicMerge function is called to combine
-    them into a single sorted sequence in the direction specified by dir.
-
-    Parameters:
-    - low: starting index of the sequence
-    - cnt: number of elements to sort
-    - dir: sorting direction (1 for ascending, 0 for descending)
-*/
-void bitonicSort(uint32_t values[], unsigned int low, unsigned int cnt, int dir)
+// This function implements the bitonic sort algorithm using multiple threads for
+// parallel processing. It sorts the input array in either ascending or descending order.
+// The function follows these steps:
+//  1. Pads the input array to the next power of 2 for efficient bitonic sort processing
+//  2. Divides the padded array into chunks for parallel processing
+//  3. Iteratively builds and merges bitonic sequences of increasing size
+//  4. Uses multiple threads to compare and swap elements in parallel
+//  5. Copies the sorted elements back to the original array
+//  6. Reverses the array if descending order is requested
+//
+//  Note: The bitonic sort algorithm requires the array length to be a power of 2,
+//  which is why padding is necessary for arrays of arbitrary length.
+void bitonicSort(uint32_t values[], unsigned int arrayLength, unsigned int numThreads, int sortOrder)
 {
-    if (cnt > 1)
+    // Step 1: Pad the array to the next power of 2
+    unsigned int paddedLength = 1 << static_cast<int>(std::ceil(std::log2(arrayLength)));
+    std::vector paddedValues(paddedLength, std::numeric_limits<uint32_t>::max());
+    std::copy(values, values + arrayLength, paddedValues.begin());
+
+    // Step 2: Determine chunk size for each thread
+    unsigned int chunkSize = paddedLength / numThreads;
+
+    // Step 3: Iteratively build and merge bitonic sequences
+    // Outer loop: controls the size of bitonic sequences
+    for (unsigned int bitonicSequenceSize = 2; bitonicSequenceSize <= paddedLength; bitonicSequenceSize *= 2)
     {
-        unsigned int k = cnt / 2;
+        // Middle loop: controls the size of sub-sequences being merged
+        for (unsigned int mergeStep = bitonicSequenceSize / 2; mergeStep > 0; mergeStep /= 2)
+        {
+            // Step 4: Use multiple threads to compare and swap elements in parallel
+            std::vector<std::thread> threads;
+            threads.reserve(numThreads);
 
-        // Recursively sort first half in descending order (0)
-        bitonicSort(values, low, k, 0);
+            // Thread creation loop
+            for (unsigned int threadId = 0; threadId < numThreads; threadId++)
+            {
+                threads.emplace_back(compareAndSwap,
+                                     std::ref(paddedValues),
+                                     threadId,
+                                     chunkSize,
+                                     mergeStep,
+                                     bitonicSequenceSize);
+            }
 
-        // Recursively sort second half in ascending order (1)
-        bitonicSort(values, low + k, k, 1);
+            // Wait for all threads to complete this stage
+            for (auto& thread : threads)
+            {
+                thread.join();
+            }
+        }
+    }
 
-        // Merge the two halves into a bitonic sequence sorted in the specified direction
-        bitonicMerge(values, low, cnt, dir);
+    // Step 5: Copy back the sorted values
+    std::copy(paddedValues.begin(), paddedValues.begin() + arrayLength, values);
+
+    // Step 6: If descending order is required, reverse the array
+    if (sortOrder == 0)
+    {
+        std::reverse(values, values + arrayLength);
     }
 }
 
@@ -91,7 +127,7 @@ float sortCPU(uint32_t values[], unsigned int arrayLength, int sortOrder)
     TimerCPU timer_cpu;       // Timer to measure the sorting duration
     timer_cpu.start();        // Start the timer
 
-    bitonicSort(values, 0, arrayLength, sortOrder); // Sort the array using Bitonic Sort
+    bitonicSort(values, arrayLength, 1, sortOrder); // Sort the array using Bitonic Sort
 
     float time = timer_cpu.getElapsedMilliseconds(); // Get the elapsed time
     std::cout << "[CPU] - Sorting time: " << time << " ms" << std::endl; // Output the sorting time

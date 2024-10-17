@@ -2,21 +2,28 @@
 #define BITONICSORTCPU_H
 
 #include <cstdint>
+#include <vector>
 
-// Function that compares and swaps two elements if they are not in the correct order
-// according to the sorting direction (dir). `dir = 1` means ascending, `dir = 0` means descending.
-void compAndSwap(uint32_t values[], unsigned int i, unsigned int j, int dir);
+// Compares and swaps elements in a chunk of a bitonic sequence.
+// "paddedValues" Reference to the vector containing the padded input array
+// "threadId" ID of the current thread, used to determine which chunk to process
+// "chunkSize" Size of the chunk each thread is responsible for
+// "mergeStep" Current step in the merging process, determines which elements to compare
+// "bitonicSequenceSize" Size of the current bitonic sequence being processed
+void compareAndSwap(std::vector<uint32_t>& paddedValues, unsigned int threadId,
+                    unsigned int chunkSize, unsigned int mergeStep, unsigned int bitonicSequenceSize);
 
-// Function that merges two halves of a bitonic sequence into one sequence
-// sorted according to the specified direction (dir).
-void bitonicMerge(uint32_t values[], unsigned int low, unsigned int cnt, int dir);
-
-// Recursive function that divides an array into two halves, sorts each half
-// in opposite directions, and then merges them into a bitonic sequence.
-void bitonicSort(uint32_t values[], unsigned int low, unsigned int cnt, int dir);
+// Performs a parallel bitonic sort on the input array.
+// "values" Pointer to the array to be sorted
+// "arrayLength" Number of elements in the input array
+// "numThreads" Number of threads to use for parallel processing
+// "sortOrder" Determines the final sort order (0 for descending, non-zero for ascending)
+void bitonicSort(uint32_t values[], unsigned int arrayLength, unsigned int numThreads, int sortOrder);
 
 // Function that sorts an entire array using the Bitonic Sort algorithm.
-// The parameter `sortOrder = 1` for ascending order and `sortOrder = 0` for descending order.
+// "values" Pointer to the array to be sorted
+// "arrayLength" Number of elements in the input array
+// "sortOrder" Determines the final sort order (0 for descending, non-zero for ascending)
 // Returns the time taken to sort the array in milliseconds.
 float sortCPU(uint32_t values[], unsigned int arrayLength, int sortOrder);
 
