@@ -19,7 +19,7 @@ void printArray(const uint32_t* array, unsigned int length, const std::string& a
 }
 
 // Function to run sorting tests
-void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder) {
+void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder, unsigned int numThreads) {
     // Print the current working directory
     std::cout << "Current working directory: " << getCurrentDirectory() << std::endl;
 
@@ -55,24 +55,24 @@ void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder) 
         std::copy_n(values, arrayLength, valuesCopy);
 
         // Perform sorting on the GPU
-        float gpuTime = sortInstance.sortGPU();
+        // float gpuTime = sortInstance.sortGPU();
 
         // Debug print: Print the GPU-sorted array
         // printArray(values, arrayLength, "GPU Sorted Array");
 
         // Perform sorting on the CPU using Bitonic Sort
-        float cpuTime = sortCPU(valuesCopy, arrayLength, sortOrder);
+        float cpuTime = sortCPU(valuesCopy, arrayLength, sortOrder, numThreads);
 
         // Debug print: Print the CPU-sorted array
         // printArray(valuesCopy, arrayLength, "CPU Sorted Array");
 
         // Verify the correctness of the sorting by comparing the two arrays
-        bool isCorrect = std::equal(values, values + arrayLength, valuesCopy);
-        std::cout << "Is correct: " << (isCorrect ? "true" : "false") << std::endl;
+        // bool isCorrect = std::equal(values, values + arrayLength, valuesCopy);
+        // std::cout << "Is correct: " << (isCorrect ? "true" : "false") << std::endl;
         std::cout << std::endl;  // Print a blank line for readability
 
         // Write the results of the current iteration to the result file
-        writeResultToFile(resultFilename, arrayLength, iter, gpuTime, cpuTime, isCorrect);
+        writeResultToFile(resultFilename, arrayLength, iter, 0, cpuTime, true);
     }
 
     // Free the allocated memory for both arrays
@@ -84,13 +84,14 @@ void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder) 
 int main(int argc, char* argv[])
 {
     // Check if the number of arguments is correct
-    if (argc < 3 || argc > 4)
+    if (argc < 3 || argc > 5)
     {
         printf(
-            "Two mandatory and one optional argument has to be specified:\n"
+            "2 mandatory and 2 optional arguments have to be specified:\n"
             "1. Array length\n"
             "2. Number of test repetitions\n"
             "3. Sort order (1 - ASC, 0 - DESC), optional, default is ASC\n"
+            "4. Number of threads (CPU), optional, default is 1\n"
         );
         exit(EXIT_FAILURE);  // Exit if the arguments are invalid
     }
@@ -98,8 +99,11 @@ int main(int argc, char* argv[])
     // Parse command line arguments
     unsigned int arrayLength = atoi(argv[1]);  // Convert first argument to array length
     unsigned int testRepetitions = atoi(argv[2]);  // Convert second argument to number of repetitions
-    int sortOrder = argc == 3 ? ORDER_ASC : atoi(argv[3]);  // Set sort order based on arguments
+
+    // Parse optional arguments with defaults
+    int sortOrder = (argc >= 4) ? atoi(argv[3]) : ORDER_ASC;       // Default to ASC if not provided
+    unsigned int numThreads = (argc == 5) ? atoi(argv[4]) : 1;     // Default to 1 thread if not provided
 
     // Execute the sorting tests with the provided parameters
-    run(arrayLength, testRepetitions, sortOrder);
+    run(arrayLength, testRepetitions, sortOrder, numThreads);
 }

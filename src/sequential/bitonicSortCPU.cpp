@@ -122,12 +122,12 @@ void bitonicSort(uint32_t values[], unsigned int arrayLength, unsigned int numTh
 
     Returns the time taken to sort the array in milliseconds.
 */
-float sortCPU(uint32_t values[], unsigned int arrayLength, int sortOrder)
+float sortCPU(uint32_t values[], unsigned int arrayLength, int sortOrder, unsigned int numThreads)
 {
     TimerCPU timer_cpu;       // Timer to measure the sorting duration
     timer_cpu.start();        // Start the timer
 
-    bitonicSort(values, arrayLength, 1, sortOrder); // Sort the array using Bitonic Sort
+    bitonicSort(values, arrayLength, numThreads, sortOrder); // Sort the array using Bitonic Sort
 
     float time = timer_cpu.getElapsedMilliseconds(); // Get the elapsed time
     std::cout << "[CPU] - Sorting time: " << time << " ms" << std::endl; // Output the sorting time

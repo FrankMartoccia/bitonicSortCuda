@@ -24,7 +24,8 @@ void bitonicSort(uint32_t values[], unsigned int arrayLength, unsigned int numTh
 // "values" Pointer to the array to be sorted
 // "arrayLength" Number of elements in the input array
 // "sortOrder" Determines the final sort order (0 for descending, non-zero for ascending)
+// "numThreads" Number of threads to use in the sorting
 // Returns the time taken to sort the array in milliseconds.
-float sortCPU(uint32_t values[], unsigned int arrayLength, int sortOrder);
+float sortCPU(uint32_t values[], unsigned int arrayLength, int sortOrder, unsigned int numThreads);
 
 #endif // BITONICSORTCPU_H
