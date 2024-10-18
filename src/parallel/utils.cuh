@@ -8,7 +8,7 @@
 std::string getCurrentDirectory();
 
 // Generates a result filename based on the array length (in log2 format)
-std::string getResultFilename(unsigned int arrayLength);
+std::string getResultFilename(unsigned int arrayLength, const std::string& resultFolder, unsigned int numThreads);
 
 // Ensures that the directory for the given file path exists; creates it if not
 void ensureDirectoryExists(const std::string& filePath);
@@ -20,7 +20,7 @@ void writeResultToFile(const std::string& filename, unsigned int arrayLength, un
 
 // Initializes a result file with metadata like array length, test repetitions, and sort order
 void initializeResultFile(const std::string& filename, unsigned int arrayLength, unsigned int testRepetitions,
-                          int sortOrder, unsigned int gridSize, unsigned int blockSize);
+                          int sortOrder, unsigned int gridSize, unsigned int numThreads, bool skipGPU);
 
 // Fills an array with random 32-bit unsigned integers
 void fillArray(uint32_t* keys, unsigned int tableLen);

@@ -20,12 +20,12 @@ std::string getCurrentDirectory() {
 /*
  * Generates the filename for the result file based on the array length.
  * The filename is formatted as "sorting_results_<log2(arrayLength)>.csv".
- */
-std::string getResultFilename(unsigned int arrayLength) {
-    int log2Length = static_cast<int>(std::log2(arrayLength));
-    std::stringstream ss;
-    ss << "../results/sorting_results_" << log2Length << ".csv";
-    return ss.str();
+*/
+std::string getResultFilename(unsigned int arrayLength, const std::string& resultFolder, unsigned int numThreads) {
+	int log2Length = static_cast<int>(std::log2(arrayLength));
+	std::stringstream ss;
+	ss << resultFolder << "/array_length_2^" << log2Length << "_threads_" << numThreads << ".csv";
+	return ss.str();
 }
 
 /*
@@ -72,7 +72,7 @@ void writeResultToFile(const std::string& filename, unsigned int arrayLength, un
 }
 
 void initializeResultFile(const std::string& filename, unsigned int arrayLength, unsigned int testRepetitions,
-                          int sortOrder, unsigned int gridSize, unsigned int blockSize) {
+                          int sortOrder, unsigned int gridSize, unsigned int numThreads, bool skipGPU) {
 	ensureDirectoryExists(filename);
 	std::ofstream outFile(filename);
 	if (!outFile) {
@@ -85,10 +85,14 @@ void initializeResultFile(const std::string& filename, unsigned int arrayLength,
 	outFile << "Test Repetitions: " << testRepetitions << std::endl;
 	outFile << "Sort Order: " << (sortOrder == ORDER_ASC ? "Ascending\n" : "Descending\n") << std::endl;
 
-	// Write grid, block, and thread information
-	outFile << "Grid Size: " << gridSize << std::endl;
-	outFile << "Block Size: " << blockSize << std::endl;
-	outFile << "Threads: " << gridSize * blockSize << "\n\n";
+	if (!skipGPU) {
+		// Write grid, block, and thread information
+		outFile << "Grid Size: " << gridSize << std::endl;
+		outFile << "Block Size: " << THREADS_BITONIC_SORT << std::endl;
+		outFile << "Threads (GPU): " << gridSize * THREADS_BITONIC_SORT << "\n\n";
+	} else {
+		outFile << "Threads (CPU): " << numThreads << "\n\n";
+	}
 
 	// Header for the results
 	outFile << "Timestamp,Array Length,Iteration,GPU Time (ms),CPU Time (ms),Is Correct" << std::endl;
