@@ -1,0 +1,12 @@
+Array Length: 65536
+Test Repetitions: 5
+Sort Order: Ascending
+
+Threads (CPU): 64
+
+Timestamp,Array Length,Iteration,GPU Time (ms),CPU Time (ms),Is Correct
+2024-10-18 15:53:36,65536,0,0,208.637,true
+2024-10-18 15:53:36,65536,1,0,218.206,true
+2024-10-18 15:53:36,65536,2,0,212.869,true
+2024-10-18 15:53:37,65536,3,0,212.088,true
+2024-10-18 15:53:37,65536,4,0,215.819,true

@@ -7,8 +7,7 @@ EXECUTABLE="../cmake-build-debug/parallel"
 array_lengths=(65536 4194304 268435456)
 
 # Array of thread counts
-#thread_counts=(1 2 4 8 16 32 64 128)
-thread_counts=(2 4 8 16 32 64 128)
+thread_counts=(1 2 4 8 16 32 64 128)
 
 # Number of test repetitions
 test_repetitions=5
