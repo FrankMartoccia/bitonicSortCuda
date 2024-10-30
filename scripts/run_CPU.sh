@@ -1,16 +1,16 @@
 #!/bin/bash
 
 # Path to the executable
-EXECUTABLE="../cmake-build-debug/parallel"
+EXECUTABLE="../cmake-build-release/parallel"
 
-# Array lengths (2^16, 2^22, 2^28)
-array_lengths=(65536 4194304 268435456)
+# Array lengths 2^17, 2^19, 2^20, 2^25, 2^26, 2^27
+array_lengths=(131072 524288 1048576 33554432 67108864 134217728)
 
 # Array of thread counts
-thread_counts=(1 2 4 8 16 32 64 128)
+thread_counts=(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32)
 
 # Number of test repetitions
-test_repetitions=5
+test_repetitions=10
 
 # Sort order (1 for ascending, 0 for descending)
 sort_order=1
