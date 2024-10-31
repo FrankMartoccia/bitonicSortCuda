@@ -1,5 +1,5 @@
-#ifndef BITONICSORTCPU_H
-#define BITONICSORTCPU_H
+#ifndef BITONICSORTCPUV1_H
+#define BITONICSORTCPUV1_H
 
 #include <cstdint>
 #include <vector>
@@ -26,6 +26,6 @@ void bitonicSort(uint32_t values[], unsigned int arrayLength, unsigned int numTh
 // "sortOrder" Determines the final sort order (0 for descending, non-zero for ascending)
 // "numThreads" Number of threads to use in the sorting
 // Returns the time taken to sort the array in milliseconds.
-float sortCPU(uint32_t values[], unsigned int arrayLength, int sortOrder, unsigned int numThreads);
+float sortCPUv1(uint32_t values[], unsigned int arrayLength, int sortOrder, unsigned int numThreads);
 
-#endif // BITONICSORTCPU_H
+#endif

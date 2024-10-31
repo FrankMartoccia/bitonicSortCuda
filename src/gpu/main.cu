@@ -7,7 +7,8 @@
 #include "constants.h"  // Constants used for sorting orders
 #include "Sort.cuh"     // Include the Sort class for GPU sorting
 #include "utils.cuh"    // Include utility functions for file handling, directory management, etc.
-#include "../sequential/bitonicSortCPU.h"  // Include CPU implementation of Bitonic Sort
+#include "../cpu/bitonicSortCPUv1.h"  // Include CPU implementation of Bitonic Sort
+#include "../cpu/bitonicSortCPUv2.h"  // Include CPU implementation of Bitonic Sort
 
 // Function to print array values to the console
 void printArray(const uint32_t* array, unsigned int length, const std::string& arrayName) {
@@ -63,7 +64,8 @@ void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder, 
         }
 
         // Perform sorting on the CPU using Bitonic Sort
-        float cpuTime = sortCPU(valuesCopy, arrayLength, sortOrder, numThreads);
+        // float cpuTime = sortCPUv1(valuesCopy, arrayLength, sortOrder, numThreads);
+        float cpuTime = sortCPUv2(valuesCopy, arrayLength, sortOrder, numThreads);
 
         // Debug print: Print the CPU-sorted array
         // printArray(valuesCopy, arrayLength, "CPU Sorted Array");

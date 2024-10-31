@@ -1,4 +1,4 @@
-#include "bitonicSortCPU.h"
+#include "bitonicSortCPUv1.h"
 #include "TimerCPU.h"
 #include <cstdint>
 #include <algorithm>
@@ -64,7 +64,7 @@ void bitonicSort(uint32_t values[], unsigned int arrayLength, unsigned int numTh
 {
     // Step 1: Pad the array to the next power of 2
     unsigned int paddedLength = 1 << static_cast<int>(std::ceil(std::log2(arrayLength)));
-    std::vector paddedValues(paddedLength, std::numeric_limits<uint32_t>::max());
+    std::vector<uint32_t> paddedValues(paddedLength, std::numeric_limits<uint32_t>::max());
     std::copy(values, values + arrayLength, paddedValues.begin());
 
     // Step 2: Determine chunk size for each thread
@@ -122,7 +122,7 @@ void bitonicSort(uint32_t values[], unsigned int arrayLength, unsigned int numTh
 
     Returns the time taken to sort the array in milliseconds.
 */
-float sortCPU(uint32_t values[], unsigned int arrayLength, int sortOrder, unsigned int numThreads)
+float sortCPUv1(uint32_t values[], unsigned int arrayLength, int sortOrder, unsigned int numThreads)
 {
     TimerCPU timer_cpu;       // Timer to measure the sorting duration
     timer_cpu.start();        // Start the timer
