@@ -14,7 +14,6 @@ void simdBitonicSort(uint32_t* values, unsigned int length) {
     std::vector<uint32_t> padded(paddedLength, std::numeric_limits<uint32_t>::max());
     std::copy(values, values + length, padded.begin());
 
-    // Process 8 elements at a time using AVX2
     for (unsigned int k = 2; k <= paddedLength; k *= 2) {
         for (unsigned int j = k / 2; j > 0; j /= 2) {
             #pragma omp parallel for simd
@@ -37,8 +36,6 @@ void simdBitonicSort(uint32_t* values, unsigned int length) {
 
 // Bucket sort implementation for large arrays
 void bucketSort(uint32_t* values, unsigned int length, int sortOrder) {
-    const unsigned int NUM_BUCKETS = 256; // Use 256 buckets for uint32_t
-
     // Create buckets
     std::vector<std::vector<uint32_t>> buckets(NUM_BUCKETS);
 

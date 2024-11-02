@@ -3,6 +3,7 @@
 
 #include <cstdint>
 
+constexpr unsigned int NUM_BUCKETS = 256; // Use 256 buckets for uint32_t
 // Threshold for switching between bucket sort and bitonic sort
 constexpr unsigned int BUCKET_THRESHOLD = 1024 * 1024; // 1M elements
 constexpr unsigned int BITONIC_BLOCK_SIZE = 1024; // Size for bitonic sort blocks

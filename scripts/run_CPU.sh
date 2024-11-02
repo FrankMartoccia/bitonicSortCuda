@@ -10,7 +10,7 @@ array_lengths=(131072 524288 1048576 33554432 67108864 134217728)
 thread_counts=(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32)
 
 # Number of test repetitions
-test_repetitions=10
+test_repetitions=30
 
 # Sort order (1 for ascending, 0 for descending)
 sort_order=1
