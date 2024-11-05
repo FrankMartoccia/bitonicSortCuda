@@ -29,7 +29,7 @@ void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder, 
     std::cout << "Results will be saved in: " << resultFilename << std::endl;
 
     // Compute block and grid sizes
-    // unsigned int elemsPerThreadBlock = arrayLength / (THREADS_BITONIC_SORT * BITONIC_BLOCKS);
+    // unsigned int elemsPerThreadBlock = arrayLength / (BITONIC_SORT_THREADS * BITONIC_BLOCKS);
     // unsigned int gridSize = (arrayLength + elemsPerThreadBlock - 1) / elemsPerThreadBlock;
 
     // Initialize result file with grid, block size, and thread info

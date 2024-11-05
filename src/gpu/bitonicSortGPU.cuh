@@ -18,6 +18,7 @@ __device__ void bitonicMergeStep(
     unsigned int dataBlockLen,
     unsigned int stride,
     int sortOrder,
+    int numThreads,
     bool isFirstStepOfPhase
 );
 
@@ -72,6 +73,11 @@ void runBitonicMergeGlobalKernel(
     unsigned int step,
     int sortOrder
 );
+
+void runBitonicMergeLocalKernel(uint32_t *d_values, unsigned int array_length, unsigned int phase, unsigned int step, int sortOrder);
+
+__global__ void bitonicMergeLocalKernel(
+    uint32_t *d_values, unsigned int array_length, unsigned int step, int sortOrder, bool isFirstStepOfPhase);
 
 // Host function for parallel bitonic sort
 // This function orchestrates the entire sorting process on the GPU, including bitonic sorting and merging.
