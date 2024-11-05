@@ -36,8 +36,8 @@ int compareDesc(const void* elem1, const void* elem2);
 
 // CUDA device function to calculate the offset and length of a data block handled by each thread block
 // based on the number of threads and elements per thread
-__device__ void calcDataBlockLength(unsigned int &offset, unsigned int &dataBlockLength, unsigned int arrayLength,
-    unsigned int numThreads, unsigned int elemsThread);
+__device__ void calcDataBlockLength(unsigned int& offset, unsigned int& dataBlockLength, unsigned int arrayLength,
+                                    unsigned int numBlocks);
 
 // CUDA device function to compare and exchange two elements based on the sorting order (ascending or descending)
 __device__ void compareExchange(uint32_t *elem1, uint32_t *elem2, int sortOrder);

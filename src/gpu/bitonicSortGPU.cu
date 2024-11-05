@@ -60,7 +60,7 @@ __global__ void normalizedBitonicSort(
     unsigned int offset, dataBlockLength;
 
     // Calculate block-specific data length
-    calcDataBlockLength(offset, dataBlockLength, arrayLength, THREADS_BITONIC_SORT, ELEMENTS_BITONIC_SORT);
+    calcDataBlockLength(offset, dataBlockLength, arrayLength, BITONIC_BLOCKS);
 
     // Copy data from global memory to shared memory
     for (unsigned int tx = threadIdx.x; tx < dataBlockLength; tx += THREADS_BITONIC_SORT)
@@ -103,7 +103,7 @@ __global__ void bitonicMergeGlobalKernel(
     uint32_t *dataTable, unsigned int arrayLength, unsigned int step, int sortOrder, bool isFirstStepOfPhase)
 {
     unsigned int offset, dataBlockLength;
-    calcDataBlockLength(offset, dataBlockLength, arrayLength, THREADS_GLOBAL_MERGE, ELEMENTS_GLOBAL_MERGE);
+    calcDataBlockLength(offset, dataBlockLength, arrayLength, MERGE_BLOCKS);
 
     bitonicMergeStep(
         dataTable, offset / 2, arrayLength, dataBlockLength, 1 << (step - 1), sortOrder, isFirstStepOfPhase
@@ -115,11 +115,11 @@ Launches the kernel for bitonic sorting using shared memory.
 */
 void runBitonicSortKernel(uint32_t *d_values, unsigned int arrayLength, int sortOrder)
 {
-    unsigned int elemsPerThreadBlock = THREADS_BITONIC_SORT * ELEMENTS_BITONIC_SORT;
+    unsigned int elemsPerThreadBlock = arrayLength / (BITONIC_BLOCKS);
     unsigned int sharedMemSize = elemsPerThreadBlock * sizeof(*d_values);
 
     // Define grid and block dimensions for kernel launch
-    dim3 dimGrid((arrayLength - 1) / elemsPerThreadBlock + 1, 1, 1);
+    dim3 dimGrid(BITONIC_BLOCKS, 1, 1);
     dim3 dimBlock(THREADS_BITONIC_SORT, 1, 1);
 
     // Launch the normalized bitonic sort kernel
@@ -134,10 +134,10 @@ Launches the kernel for global bitonic merging.
 void runBitonicMergeGlobalKernel(
     uint32_t *d_values, unsigned int arrayLength, unsigned int phase, unsigned int step, int sortOrder)
 {
-    unsigned int elemsPerThreadBlock = THREADS_GLOBAL_MERGE * ELEMENTS_GLOBAL_MERGE;
+    // unsigned int elemsPerThreadBlock = arrayLength / (THREADS_GLOBAL_MERGE * MERGE_BLOCKS);
 
     // Define grid and block dimensions for the merge kernel
-    dim3 dimGrid((arrayLength - 1) / elemsPerThreadBlock + 1, 1, 1);
+    dim3 dimGrid(MERGE_BLOCKS, 1, 1);
     dim3 dimBlock(THREADS_GLOBAL_MERGE, 1, 1);
 
     // Launch the global bitonic merge kernel
@@ -153,7 +153,7 @@ void bitonicSortParallel(uint32_t *d_values, unsigned int array_length, int sort
 {
     // Calculate the next power of 2 for the array length
     unsigned int arrayLenPower2 = nextPowerOf2(array_length);
-    unsigned int elemsPerBlockBitonicSort = THREADS_BITONIC_SORT * ELEMENTS_BITONIC_SORT;
+    unsigned int elemsPerBlockBitonicSort = array_length / (BITONIC_BLOCKS);
 
     // Calculate the number of phases for the bitonic sort and merge
     unsigned int phasesBitonicSort = log2(static_cast<double>(min(arrayLenPower2, elemsPerBlockBitonicSort)));
