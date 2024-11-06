@@ -10,11 +10,11 @@ This device function compares and exchanges two elements for each thread.
 */
 __device__ void bitonicMergeStep(
     uint32_t *values, unsigned int offsetGlobal, unsigned int arrayLength, unsigned int dataBlockLen, unsigned int stride,
-    int sortOrder, bool isFirstStepOfPhase
+    int sortOrder, int numThreads, bool isFirstStepOfPhase
 )
 {
     // Each thread will compare and exchange 2 elements in the bitonic merge step
-    for (unsigned int tx = threadIdx.x; tx < dataBlockLen >> 1; tx += THREADS_BITONIC_SORT)
+    for (unsigned int tx = threadIdx.x; tx < dataBlockLen >> 1; tx += numThreads)
     {
         unsigned int indexThread = offsetGlobal + tx;
         unsigned int offset = stride;
@@ -77,12 +77,14 @@ __global__ void normalizedBitonicSort(
             if (stride == subBlockSize)
             {
                 // First step of each phase
-                bitonicMergeStep(bitonicSortTile, 0, dataBlockLength, dataBlockLength, stride, sortOrder, true);
+                bitonicMergeStep(bitonicSortTile, 0, dataBlockLength, dataBlockLength, stride, sortOrder,
+                    THREADS_BITONIC_SORT, true);
             }
             else
             {
                 // Subsequent steps
-                bitonicMergeStep(bitonicSortTile, 0, dataBlockLength, dataBlockLength, stride, sortOrder, false);
+                bitonicMergeStep(bitonicSortTile, 0, dataBlockLength, dataBlockLength, stride, sortOrder,
+                    THREADS_BITONIC_SORT, false);
             }
             __syncthreads();
         }
@@ -106,7 +108,8 @@ __global__ void bitonicMergeGlobalKernel(
     calcDataBlockLength(offset, dataBlockLength, arrayLength, MERGE_BLOCKS);
 
     bitonicMergeStep(
-        dataTable, offset / 2, arrayLength, dataBlockLength, 1 << (step - 1), sortOrder, isFirstStepOfPhase
+        dataTable, offset / 2, arrayLength, dataBlockLength, 1 << (step - 1), sortOrder,
+        THREADS_GLOBAL_MERGE, isFirstStepOfPhase
     );
 }
 
@@ -115,7 +118,7 @@ Launches the kernel for bitonic sorting using shared memory.
 */
 void runBitonicSortKernel(uint32_t *d_values, unsigned int arrayLength, int sortOrder)
 {
-    unsigned int elemsPerThreadBlock = arrayLength / (BITONIC_BLOCKS);
+    unsigned int elemsPerThreadBlock = arrayLength / BITONIC_BLOCKS;
     unsigned int sharedMemSize = elemsPerThreadBlock * sizeof(*d_values);
 
     // Define grid and block dimensions for kernel launch
@@ -153,7 +156,7 @@ void bitonicSortParallel(uint32_t *d_values, unsigned int array_length, int sort
 {
     // Calculate the next power of 2 for the array length
     unsigned int arrayLenPower2 = nextPowerOf2(array_length);
-    unsigned int elemsPerBlockBitonicSort = array_length / (BITONIC_BLOCKS);
+    unsigned int elemsPerBlockBitonicSort = array_length / BITONIC_BLOCKS;
 
     // Calculate the number of phases for the bitonic sort and merge
     unsigned int phasesBitonicSort = log2(static_cast<double>(min(arrayLenPower2, elemsPerBlockBitonicSort)));

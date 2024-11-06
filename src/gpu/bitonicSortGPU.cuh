@@ -18,6 +18,7 @@ __device__ void bitonicMergeStep(
     unsigned int dataBlockLen,
     unsigned int stride,
     int sortOrder,
+    int numThreads,
     bool isFirstStepOfPhase
 );
 
