@@ -189,7 +189,7 @@ __global__ void bitonicMergeLocalKernel(
 
 void runBitonicMergeLocalKernel(uint32_t *d_values, unsigned int array_length, unsigned int phase, unsigned int step, int sortOrder) {
 
-    unsigned int elemsPerThreadBlock = array_length / MERGE_GLOBAL_BLOCKS;
+    unsigned int elemsPerThreadBlock = array_length / MERGE_LOCAL_BLOCKS;
     unsigned int sharedMemSize = elemsPerThreadBlock * sizeof(*d_values);
 
     dim3 dimGrid(MERGE_LOCAL_BLOCKS, 1, 1);
