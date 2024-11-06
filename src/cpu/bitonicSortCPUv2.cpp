@@ -24,14 +24,14 @@ void simdBitonicSort(uint32_t* values, unsigned int length) {
 
     // Main bitonic sort loop
     // k represents the current subsequence size (doubles each iteration)
-    for (unsigned int k = 2; k <= paddedLength; k *= 2) {
+    for (int k = 2; k <= paddedLength; k *= 2) {
         // j represents the current comparison distance (halves each iteration)
-        for (unsigned int j = k / 2; j > 0; j /= 2) {
+        for (int j = k / 2; j > 0; j /= 2) {
             // Enable SIMD parallelization for the comparison loop
             #pragma omp parallel for simd
-            for (unsigned int i = 0; i < paddedLength; i++) {
+            for (int i = 0; i < paddedLength; i++) {
                 // Calculate index to compare with using XOR
-                unsigned int ixj = i ^ j;
+                int ixj = i ^ j;
                 // Only perform comparison if target index is higher (prevents double swapping)
                 if ((ixj) > i) {
                     // For ascending sequences (when i's k-th bit is 0)
@@ -72,9 +72,9 @@ void bucketSort(uint32_t* values, unsigned int length, int sortOrder) {
         // Distribute elements to thread-local buckets
         // nowait allows threads to proceed without synchronization at loop end
         #pragma omp for nowait
-        for (unsigned int i = 0; i < length; i++) {
+        for (int i = 0; i < length; i++) {
             // Extract most significant byte (bits 24-31) for bucket index
-            unsigned int bucket = (values[i] >> 24) & 0xFF;
+            int bucket = (values[i] >> 24) & 0xFF;
             localBuckets[bucket].push_back(values[i]);
         }
 
@@ -82,7 +82,7 @@ void bucketSort(uint32_t* values, unsigned int length, int sortOrder) {
         // Critical section prevents concurrent access to shared buckets
         #pragma omp critical
         {
-            for (unsigned int i = 0; i < NUM_BUCKETS; i++) {
+            for (int i = 0; i < NUM_BUCKETS; i++) {
                 buckets[i].insert(buckets[i].end(),
                                 localBuckets[i].begin(),
                                 localBuckets[i].end());
@@ -93,7 +93,7 @@ void bucketSort(uint32_t* values, unsigned int length, int sortOrder) {
     // Second phase: Sort individual buckets
     // Use dynamic scheduling for better load balancing as bucket sizes may vary
     #pragma omp parallel for schedule(dynamic)
-    for (unsigned int i = 0; i < NUM_BUCKETS; i++) {
+    for (int i = 0; i < NUM_BUCKETS; i++) {
         if (buckets[i].size() > 1) {
             // Sort each non-empty bucket using bitonic sort
             simdBitonicSort(buckets[i].data(), buckets[i].size());
