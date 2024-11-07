@@ -22,9 +22,20 @@ std::string getCurrentDirectory() {
  * The filename is formatted as "sorting_results_<log2(arrayLength)>.csv".
 */
 std::string getResultFilename(unsigned int arrayLength, const std::string& resultFolder, unsigned int numThreads) {
-	int log2Length = static_cast<int>(std::log2(arrayLength));
 	std::stringstream ss;
-	ss << resultFolder << "/array_length_2^" << log2Length << "_threads_" << numThreads << ".csv";
+
+	// Check if arrayLength is a power of 2
+	if ((arrayLength & (arrayLength - 1)) == 0) {
+		// If arrayLength is a power of 2, display it as 2^log2Length
+		int log2Length = static_cast<int>(std::log2(arrayLength));
+		ss << resultFolder << "/array_length_2^" << log2Length;
+	} else {
+		// If not a power of 2, display the size in MB or MiB
+		double sizeInMB = static_cast<double>(arrayLength * 4) / 1'000'000; // Use 1'048'576 for MiB if preferred
+		ss << resultFolder << "/array_size_" << sizeInMB << "MB";
+	}
+
+	ss << "_threads_" << numThreads << ".csv";
 	return ss.str();
 }
 
