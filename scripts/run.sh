@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Path to the executable
-EXECUTABLE="../cmake-build-debug/parallel"
+EXECUTABLE="../cmake-build-release/parallel"
 
 # Number of test repetitions
 test_repetitions=30
