@@ -26,29 +26,37 @@ if [ -f "$OUTPUT_FILE" ]; then
 fi
 
 # Loop over all the sorting result files in the results directory
-for file in "$RESULTS_DIR"/array_length_*.csv; do
+for file in "$RESULTS_DIR"/array_length_*.csv "$RESULTS_DIR"/array_size_*.csv; do
     echo "Processing $file..."
-    
-    # Extract the array length from the file (from the first line, removing the "Array Length: " prefix)
-    array_length=$(grep "Array Length:" "$file" | cut -d ' ' -f 3)
 
-    # Calculate the exponent of 2 (log base 2 of the array length)
-    exponent=$(echo "l($array_length)/l(2)" | bc -l | awk '{printf "%d", $1}')
-    
-    # Extract the number of GPU threads from the file (search for "Threads (GPU):" line)
+    # Determine if filename contains '2^' or 'MB' to extract the array size
+    if [[ "$file" == *"2^"* ]]; then
+        # Extract the power of 2 array length
+        exponent=$(echo "$file" | grep -oP '(?<=array_length_2\^)\d+')
+        array_length=$((2 ** exponent))
+        echo "Array Length: 2^$exponent = $array_length" >> "$OUTPUT_FILE"
+    elif [[ "$file" == *"MB"* ]]; then
+        # Extract the size in MB
+        size_in_mb=$(echo "$file" | grep -oP '(?<=array_size_)\d+(\.\d+)?(?=MB)')
+        array_length=$(echo "$size_in_mb * 1000000 / 4" | bc) # Convert MB to number of 32-bit integers
+        echo "Array Size: ${size_in_mb}MB, Array Length: $array_length" >> "$OUTPUT_FILE"
+    else
+        echo "Unknown file format: $file"
+        continue
+    fi
+
+    # Extract the number of GPU threads from the file
     threads=$(grep "Threads (GPU):" "$file" | cut -d ' ' -f 3)
-    
+
     # Add the Array Length and Threads (GPU) info in the correct format before appending the data
-    echo "Array Length: 2^$exponent = $array_length" >> "$OUTPUT_FILE"
     echo "Threads (GPU):,$threads" >> "$OUTPUT_FILE"
 
     # Append only the relevant data
     tail -n +7 "$file" | sed '/^Threads (GPU):/d' >> "$OUTPUT_FILE"
-    
+
     # Add blank lines for separation between runs
     echo "" >> "$OUTPUT_FILE"
     echo "" >> "$OUTPUT_FILE"
 done
 
 echo "Data successfully merged into $OUTPUT_FILE"
-

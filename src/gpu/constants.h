@@ -21,7 +21,7 @@ constexpr int MERGE_GLOBAL_ELEMENTS = 4;     // Number of elements processed per
 // Local Merge thread and element configuration
 // These constants define the number of threads and elements for local merging during sorting
 constexpr int MERGE_LOCAL_THREADS = 256;     // Number of threads to use in the local merge kernel
-constexpr int MERGE_LOCAL_ELEMENTS = 4;       // Number of elements processed per thread in local merge
+constexpr int MERGE_LOCAL_ELEMENTS = 8;       // Number of elements processed per thread in local merge
 // constexpr int MERGE_LOCAL_BLOCKS = 4096;
 
 #endif // CONSTANTS_H
