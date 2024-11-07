@@ -1,16 +1,16 @@
 #!/bin/bash
 
 # Path to the executable
-EXECUTABLE="../cmake-build-debug/parallel"
+EXECUTABLE="../cmake-build-release/parallel"
 
 # Number of test repetitions
-test_repetitions=5
+test_repetitions=30
 
 # Sort order (1 for ascending, 0 for descending)
 sort_order=1
 
 # Number of threads
-num_threads=1
+num_threads=16
 
 # Skip GPU sort (1 to skip, 0 to run GPU sort)
 skip_gpu=0
@@ -29,15 +29,14 @@ timestamp=$(date +"%Y%m%d_%H%M%S")
 run_folder="../results/run_${folder_suffix}_$timestamp"
 mkdir -p "$run_folder"
 
-# Run experiments for array lengths as the powers of 2 specified
-# For example from 2^14 to 2^28 in steps of 2 (i.e., 2^14, 2^16, ...)
-for i in {14..28..2}
+# Run experiments for the array lengths specified
+for i in {250000..2000000..250000}
 do
-    array_length=$((2**i))
+    array_length=$i
     echo "----------------------------------------"
-    echo "Running experiment with array length 2^$i = $array_length"
+    echo "Running experiment with array length = $array_length"
     $EXECUTABLE $array_length $test_repetitions $sort_order $num_threads $skip_gpu "$run_folder"
-    echo "Experiment completed for array length 2^$i"
+    echo "Experiment completed for array length = $i"
     echo "----------------------------------------"
 done
 
