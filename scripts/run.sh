@@ -30,7 +30,7 @@ run_folder="../results/run_${folder_suffix}_$timestamp"
 mkdir -p "$run_folder"
 
 # Run experiments for the array lengths specified
-for i in {250000..2000000..250000}
+for i in {8000000..64000000..8000000}
 do
     array_length=$i
     echo "----------------------------------------"
