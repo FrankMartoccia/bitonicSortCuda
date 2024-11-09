@@ -88,8 +88,8 @@ void initializeResultFile(const std::string& filename, unsigned int arrayLength,
 	if (!skipGPU) {
 		// Write grid, block, and thread information
 		outFile << "Grid Size: " << gridSize << std::endl;
-		outFile << "Block Size: " << THREADS_BITONIC_SORT << std::endl;
-		outFile << "Threads (GPU): " << gridSize * THREADS_BITONIC_SORT << "\n\n";
+		outFile << "Block Size: " << BITONIC_SORT_THREADS << std::endl;
+		outFile << "Threads (GPU): " << gridSize * BITONIC_SORT_THREADS << "\n\n";
 	} else {
 		outFile << "Threads (CPU): " << numThreads << "\n\n";
 	}

@@ -33,7 +33,7 @@ void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder, 
     // unsigned int gridSize = (arrayLength + elemsPerThreadBlock - 1) / elemsPerThreadBlock;
 
     // Initialize result file with grid, block size, and thread info
-    initializeResultFile(resultFilename, arrayLength, testRepetitions, sortOrder, BITONIC_BLOCKS, numThreads, skipGPU);
+    initializeResultFile(resultFilename, arrayLength, testRepetitions, sortOrder, BITONIC_SORT_BLOCKS, numThreads, skipGPU);
 
     // Allocate memory for the input array and a copy for CPU sorting
     uint32_t *values = new uint32_t[arrayLength];        // Array to hold values for GPU sorting
