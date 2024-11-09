@@ -33,7 +33,7 @@ mkdir -p "$run_folder"
 for i in {18..22}
 do
     array_length=$((2**i))  # Divide by 4 because each element is 4 bytes (32 bits)
-    size_in_mb=$((2**i / 1024 / 1024))  # Calculate the size in MB for display
+    size_in_mb=$(((2**i * 4) / 1024 / 1024))  # Calculate the size in MB for display
     echo "----------------------------------------"
     echo "Running experiment with array length 2^$i = ${size_in_mb}MB ($array_length elements)"
     $EXECUTABLE $array_length $test_repetitions $sort_order $num_threads $skip_gpu "$run_folder"
