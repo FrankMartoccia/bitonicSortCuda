@@ -30,15 +30,14 @@ run_folder="../results/run_${folder_suffix}_$timestamp"
 mkdir -p "$run_folder"
 
 # Run experiments for array lengths as the powers of 2 specified
-# For example from 2^14 to 2^28 in steps of 2 (i.e., 2^14, 2^16, ...)
-for i in {20..23}
+for i in {18..22}
 do
-    array_length=$((2**i / 4))  # Divide by 4 because each element is 4 bytes (32 bits)
+    array_length=$((2**i))  # Divide by 4 because each element is 4 bytes (32 bits)
     size_in_mb=$((2**i / 1024 / 1024))  # Calculate the size in MB for display
     echo "----------------------------------------"
-    echo "Running experiment with array size 2^$i = ${size_in_mb}MB ($array_length elements)"
+    echo "Running experiment with array length 2^$i = ${size_in_mb}MB ($array_length elements)"
     $EXECUTABLE $array_length $test_repetitions $sort_order $num_threads $skip_gpu "$run_folder"
-    echo "Experiment completed for array size 2^$i = ${size_in_mb}MB"
+    echo "Experiment completed for array length 2^$i = ${size_in_mb}MB"
     echo "----------------------------------------"
 done
 
