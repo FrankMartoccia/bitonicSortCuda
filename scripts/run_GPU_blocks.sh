@@ -95,14 +95,11 @@ for idx in "${!configurations[@]}"; do
         exit 1
     fi
 
-    # Define a unique filename for the current configuration results
-    result_config_folder="${results_folder}/results_config_$((idx + 1))"
-
     # Run the executable and save output to the result file
     echo "Running experiment with configuration $((idx + 1))"
-    $EXECUTABLE $array_length $test_repetitions $sort_order $num_threads $skip_gpu "$result_config_folder"
+    $EXECUTABLE $array_length $test_repetitions $sort_order $num_threads $skip_gpu "$results_folder"
 
-    echo "Experiment completed for configuration $((idx + 1)), results saved in $result_config_folder"
+    echo "Experiment completed for configuration $((idx + 1)), results saved in $results_folder"
 done
 
 echo "All experiments completed! Results are saved in $results_folder"
