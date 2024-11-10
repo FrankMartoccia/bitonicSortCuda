@@ -4,7 +4,7 @@
 EXECUTABLE="../cmake-build-release/parallel"
 
 # Path to the constants header file
-CONSTANTS_FILE="../include/constants.h"
+CONSTANTS_FILE="../src/gpu/constants.h"
 
 # Number of test repetitions
 test_repetitions=30
@@ -19,17 +19,37 @@ num_threads=16
 skip_gpu=0
 
 # Array length for the tests
-array_length=$((2**26))  # Replace with the desired fixed size if needed
+array_length=$((2**25))  # Replace with the desired fixed size if needed
 
 # List of configurations to test
 configurations=(
-    "BITONIC_SORT_THREADS=32 BITONIC_BLOCKS=8192 MERGE_GLOBAL_THREADS=64 MERGE_GLOBAL_BLOCKS=4096 MERGE_LOCAL_THREADS=64 MERGE_LOCAL_BLOCKS=4096"
-    "BITONIC_SORT_THREADS=64 BITONIC_BLOCKS=8192 MERGE_GLOBAL_THREADS=128 MERGE_GLOBAL_BLOCKS=4096 MERGE_LOCAL_THREADS=128 MERGE_LOCAL_BLOCKS=4096"
-    "BITONIC_SORT_THREADS=128 BITONIC_BLOCKS=8192 MERGE_GLOBAL_THREADS=256 MERGE_GLOBAL_BLOCKS=4096 MERGE_LOCAL_THREADS=256 MERGE_LOCAL_BLOCKS=4096"
-    "BITONIC_SORT_THREADS=384 BITONIC_BLOCKS=8192 MERGE_GLOBAL_THREADS=768 MERGE_GLOBAL_BLOCKS=4096 MERGE_LOCAL_THREADS=768 MERGE_LOCAL_BLOCKS=4096"
-    "BITONIC_SORT_THREADS=384 BITONIC_BLOCKS=16384 MERGE_GLOBAL_THREADS=768 MERGE_GLOBAL_BLOCKS=8192 MERGE_LOCAL_THREADS=768 MERGE_LOCAL_BLOCKS=8192"
-    "BITONIC_SORT_THREADS=384 BITONIC_BLOCKS=32768 MERGE_GLOBAL_THREADS=768 MERGE_GLOBAL_BLOCKS=16384 MERGE_LOCAL_THREADS=768 MERGE_LOCAL_BLOCKS=16384"
-    "BITONIC_SORT_THREADS=384 BITONIC_BLOCKS=65536 MERGE_GLOBAL_THREADS=768 MERGE_GLOBAL_BLOCKS=32768 MERGE_LOCAL_THREADS=768 MERGE_LOCAL_BLOCKS=32768"
+    "BITONIC_SORT_THREADS=32 BITONIC_SORT_BLOCKS=8192
+     MERGE_GLOBAL_THREADS=64 MERGE_GLOBAL_BLOCKS=4096
+      MERGE_LOCAL_THREADS=64 MERGE_LOCAL_BLOCKS=4096"
+
+    "BITONIC_SORT_THREADS=64 BITONIC_SORT_BLOCKS=8192
+     MERGE_GLOBAL_THREADS=128 MERGE_GLOBAL_BLOCKS=4096
+      MERGE_LOCAL_THREADS=128 MERGE_LOCAL_BLOCKS=4096"
+
+    "BITONIC_SORT_THREADS=128 BITONIC_SORT_BLOCKS=8192
+     MERGE_GLOBAL_THREADS=256 MERGE_GLOBAL_BLOCKS=4096
+      MERGE_LOCAL_THREADS=256 MERGE_LOCAL_BLOCKS=4096"
+
+    "BITONIC_SORT_THREADS=384 BITONIC_SORT_BLOCKS=8192
+     MERGE_GLOBAL_THREADS=768 MERGE_GLOBAL_BLOCKS=4096
+      MERGE_LOCAL_THREADS=768 MERGE_LOCAL_BLOCKS=4096"
+
+    "BITONIC_SORT_THREADS=384 BITONIC_SORT_BLOCKS=16384
+     MERGE_GLOBAL_THREADS=768 MERGE_GLOBAL_BLOCKS=8192
+      MERGE_LOCAL_THREADS=768 MERGE_LOCAL_BLOCKS=8192"
+
+    "BITONIC_SORT_THREADS=384 BITONIC_SORT_BLOCKS=32768
+     MERGE_GLOBAL_THREADS=768 MERGE_GLOBAL_BLOCKS=16384
+      MERGE_LOCAL_THREADS=768 MERGE_LOCAL_BLOCKS=16384"
+
+    "BITONIC_SORT_THREADS=384 BITONIC_SORT_BLOCKS=65536
+     MERGE_GLOBAL_THREADS=768 MERGE_GLOBAL_BLOCKS=32768
+      MERGE_LOCAL_THREADS=768 MERGE_LOCAL_BLOCKS=32768"
 )
 
 # Check if the executable exists
@@ -75,15 +95,14 @@ for idx in "${!configurations[@]}"; do
         exit 1
     fi
 
-    # Create a folder for results for the current configuration
-    config_results_folder="$results_folder/config_$((idx + 1))"
-    mkdir -p "$config_results_folder"
+    # Define a unique filename for the current configuration results
+    result_config_folder="${results_folder}/results_config_$((idx + 1))"
 
-    # Run the executable
+    # Run the executable and save output to the result file
     echo "Running experiment with configuration $((idx + 1))"
-    $EXECUTABLE $array_length $test_repetitions $sort_order $num_threads $skip_gpu "$config_results_folder"
+    $EXECUTABLE $array_length $test_repetitions $sort_order $num_threads $skip_gpu "$result_config_folder"
 
-    echo "Experiment completed for configuration $((idx + 1))"
+    echo "Experiment completed for configuration $((idx + 1)), results saved in $result_config_folder"
 done
 
 echo "All experiments completed! Results are saved in $results_folder"

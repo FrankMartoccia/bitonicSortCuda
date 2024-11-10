@@ -24,8 +24,11 @@ void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder, 
     // Print the current working directory
     std::cout << "Current working directory: " << getCurrentDirectory() << std::endl;
 
+    // Calculate total threads for the current configuration (only for GPU)
+    constexpr unsigned int totalThreads = BITONIC_SORT_THREADS * BITONIC_SORT_BLOCKS;
+
     // Get the result filename based on array length
-    const std::string resultFilename = getResultFilename(arrayLength, resultFolder, numThreads);
+    const std::string resultFilename = getResultFilename(arrayLength, resultFolder, numThreads, totalThreads, skipGPU);
     std::cout << "Results will be saved in: " << resultFilename << std::endl;
 
     // Compute block and grid sizes
@@ -33,7 +36,7 @@ void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder, 
     // unsigned int gridSize = (arrayLength + elemsPerThreadBlock - 1) / elemsPerThreadBlock;
 
     // Initialize result file with grid, block size, and thread info
-    initializeResultFile(resultFilename, arrayLength, testRepetitions, sortOrder, BITONIC_SORT_BLOCKS, numThreads, skipGPU);
+    initializeResultFile(resultFilename, arrayLength, testRepetitions, sortOrder, numThreads, skipGPU);
 
     // Allocate memory for the input array and a copy for CPU sorting
     uint32_t *values = new uint32_t[arrayLength];        // Array to hold values for GPU sorting
@@ -65,7 +68,7 @@ void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder, 
 
         // Perform sorting on the CPU using Bitonic Sort
         // float cpuTime = sortCPUv1(valuesCopy, arrayLength, sortOrder, numThreads);
-        float cpuTime = sortCPUv2(valuesCopy, arrayLength, sortOrder, numThreads);
+        // float cpuTime = sortCPUv2(valuesCopy, arrayLength, sortOrder, numThreads);
 
         // Debug print: Print the CPU-sorted array
         // printArray(valuesCopy, arrayLength, "CPU Sorted Array");
@@ -80,7 +83,7 @@ void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder, 
         }
 
         // Write the results of the current iteration to the result file
-        writeResultToFile(resultFilename, arrayLength, iter, gpuTime, cpuTime, isCorrect);
+        writeResultToFile(resultFilename, arrayLength, iter, gpuTime, 0, true);
     }
 
     // Free the allocated memory for both arrays

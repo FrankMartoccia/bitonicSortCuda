@@ -21,10 +21,17 @@ std::string getCurrentDirectory() {
  * Generates the filename for the result file based on the array length.
  * The filename is formatted as "sorting_results_<log2(arrayLength)>.csv".
 */
-std::string getResultFilename(unsigned int arrayLength, const std::string& resultFolder, unsigned int numThreads) {
+std::string getResultFilename(unsigned int arrayLength, const std::string& resultFolder, unsigned int numThreads,
+	unsigned int totalThreads, bool skipGPU) {
 	int log2Length = static_cast<int>(std::log2(arrayLength));
 	std::stringstream ss;
-	ss << resultFolder << "/array_length_2^" << log2Length << "_threads_" << numThreads << ".csv";
+	ss << resultFolder << "/array_length_2^" << log2Length << "_cpu_threads_" << numThreads;
+
+	if (!skipGPU) {
+		ss << "_gpu_threads_" << totalThreads;  // Only include totalThreads if not skipping GPU
+	}
+
+	ss << ".csv";
 	return ss.str();
 }
 
@@ -72,7 +79,7 @@ void writeResultToFile(const std::string& filename, unsigned int arrayLength, un
 }
 
 void initializeResultFile(const std::string& filename, unsigned int arrayLength, unsigned int testRepetitions,
-                          int sortOrder, unsigned int gridSize, unsigned int numThreads, bool skipGPU) {
+                          int sortOrder, unsigned int numThreads, bool skipGPU) {
 	ensureDirectoryExists(filename);
 	std::ofstream outFile(filename);
 	if (!outFile) {
@@ -87,9 +94,9 @@ void initializeResultFile(const std::string& filename, unsigned int arrayLength,
 
 	if (!skipGPU) {
 		// Write grid, block, and thread information
-		outFile << "Grid Size: " << gridSize << std::endl;
+		outFile << "Grid Size: " << BITONIC_SORT_BLOCKS << std::endl;
 		outFile << "Block Size: " << BITONIC_SORT_THREADS << std::endl;
-		outFile << "Threads (GPU): " << gridSize * BITONIC_SORT_THREADS << "\n\n";
+		outFile << "Threads (GPU): " << BITONIC_SORT_BLOCKS * BITONIC_SORT_THREADS << "\n\n";
 	} else {
 		outFile << "Threads (CPU): " << numThreads << "\n\n";
 	}
