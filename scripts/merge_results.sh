@@ -25,30 +25,54 @@ if [ -f "$OUTPUT_FILE" ]; then
     rm "$OUTPUT_FILE"
 fi
 
+# Create an associative array to store filenames by their GPU thread count for sorting
+declare -A file_map
+
 # Loop over all the sorting result files in the results directory
 for file in "$RESULTS_DIR"/array_length_*.csv; do
     echo "Processing $file..."
-    
-    # Extract the array length from the file (from the first line, removing the "Array Length: " prefix)
+
+    # Extract GPU thread count from the filename, if present
+    if [[ "$file" =~ _gpu_threads_([0-9]+)\.csv$ ]]; then
+        threadsGPU="${BASH_REMATCH[1]}"
+    else
+        threadsGPU="0"  # Default to 0 if GPU threads are not present (CPU-only runs)
+    fi
+
+    # Use GPU thread count as the key to store each file
+    file_map["$threadsGPU"]="$file"
+done
+
+# Sort keys by GPU thread count and process files in order
+for threadsGPU in $(printf "%s\n" "${!file_map[@]}" | sort -n); do
+    file="${file_map[$threadsGPU]}"
+
+    # Extract array length from the filename
     array_length=$(grep "Array Length:" "$file" | cut -d ' ' -f 3)
 
     # Calculate the exponent of 2 (log base 2 of the array length)
     exponent=$(echo "l($array_length)/l(2)" | bc -l | awk '{printf "%d", $1}')
-    
-    # Extract the number of GPU threads from the file (search for "Threads (GPU):" line)
-    threads=$(grep "Threads (GPU):" "$file" | cut -d ' ' -f 3)
-    
-    # Add the Array Length and Threads (GPU) info in the correct format before appending the data
-    echo "Array Length: 2^$exponent = $array_length" >> "$OUTPUT_FILE"
-    echo "Threads (GPU):,$threads" >> "$OUTPUT_FILE"
 
-    # Append only the relevant data
+    # Extract CPU thread count from the filename
+    if [[ "$file" =~ _cpu_threads_([0-9]+) ]]; then
+        cpuThreads="${BASH_REMATCH[1]}"
+    else
+        cpuThreads="N/A"  # Default to "N/A" if CPU threads are not specified
+    fi
+
+    # Append header information for the current file to the output file
+    echo "Array Length: 2^$exponent = $array_length" >> "$OUTPUT_FILE"
+    echo "CPU Threads:,$cpuThreads" >> "$OUTPUT_FILE"
+    if [ "$threadsGPU" -ne 0 ]; then
+        echo "GPU Threads:,$threadsGPU" >> "$OUTPUT_FILE"
+    fi
+
+    # Append the relevant data, skipping headers and blank lines
     tail -n +7 "$file" | sed '/^Threads (GPU):/d' >> "$OUTPUT_FILE"
-    
+
     # Add blank lines for separation between runs
     echo "" >> "$OUTPUT_FILE"
     echo "" >> "$OUTPUT_FILE"
 done
 
 echo "Data successfully merged into $OUTPUT_FILE"
-
