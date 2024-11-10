@@ -68,7 +68,7 @@ void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder, 
 
         // Perform sorting on the CPU using Bitonic Sort
         // float cpuTime = sortCPUv1(valuesCopy, arrayLength, sortOrder, numThreads);
-        // float cpuTime = sortCPUv2(valuesCopy, arrayLength, sortOrder, numThreads);
+        float cpuTime = sortCPUv2(valuesCopy, arrayLength, sortOrder, numThreads);
 
         // Debug print: Print the CPU-sorted array
         // printArray(valuesCopy, arrayLength, "CPU Sorted Array");
@@ -83,7 +83,7 @@ void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder, 
         }
 
         // Write the results of the current iteration to the result file
-        writeResultToFile(resultFilename, arrayLength, iter, gpuTime, 0, true);
+        writeResultToFile(resultFilename, arrayLength, iter, gpuTime, cpuTime, isCorrect);
     }
 
     // Free the allocated memory for both arrays
