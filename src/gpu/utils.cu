@@ -22,13 +22,13 @@ std::string getCurrentDirectory() {
  * The filename is formatted as "sorting_results_<log2(arrayLength)>.csv".
 */
 std::string getResultFilename(unsigned int arrayLength, const std::string& resultFolder, unsigned int numThreads,
-	unsigned int totalThreads, bool skipGPU) {
+	unsigned int threadsGPU, bool skipGPU) {
 	int log2Length = static_cast<int>(std::log2(arrayLength));
 	std::stringstream ss;
 	ss << resultFolder << "/array_length_2^" << log2Length << "_cpu_threads_" << numThreads;
 
 	if (!skipGPU) {
-		ss << "_gpu_threads_" << totalThreads;  // Only include totalThreads if not skipping GPU
+		ss << "_gpu_threads_" << threadsGPU;  // Only include totalThreads if not skipping GPU
 	}
 
 	ss << ".csv";

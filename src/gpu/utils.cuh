@@ -9,7 +9,7 @@ std::string getCurrentDirectory();
 
 // Generates a result filename based on the array length (in log2 format)
 std::string getResultFilename(unsigned int arrayLength, const std::string& resultFolder, unsigned int numThreads,
-    unsigned int totalThreads, bool skipGPU);
+    unsigned int threadsGPU, bool skipGPU);
 
 // Ensures that the directory for the given file path exists; creates it if not
 void ensureDirectoryExists(const std::string& filePath);
