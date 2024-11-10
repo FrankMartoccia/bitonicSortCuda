@@ -10,7 +10,7 @@ constexpr int ORDER_DESC = 0;  // Descending order
 // These constants define the number of threads and elements used for the Bitonic Sort algorithm
 constexpr int BITONIC_SORT_THREADS = 384;  // Number of threads to use in the Bitonic Sort kernel
 // constexpr int ELEMENTS_BITONIC_SORT = 4;    // Number of elements processed per thread in Bitonic Sort
-constexpr int BITONIC_BLOCKS = 8192;
+constexpr int BITONIC_SORT_BLOCKS = 8192;
 
 // Global Merge thread and element configuration
 // These constants define the number of threads and elements for global merging during sorting

@@ -62,7 +62,7 @@ __global__ void normalizedBitonicSort(
     unsigned int offset, dataBlockLength;
 
     // Calculate block-specific data length
-    calcDataBlockLength(offset, dataBlockLength, arrayLength, BITONIC_BLOCKS);
+    calcDataBlockLength(offset, dataBlockLength, arrayLength, BITONIC_SORT_BLOCKS);
 
     // Copy data from global memory to shared memory
     for (unsigned int tx = threadIdx.x; tx < dataBlockLength; tx += BITONIC_SORT_THREADS)
@@ -117,11 +117,11 @@ Launches the kernel for bitonic sorting using shared memory.
 */
 void runBitonicSortKernel(uint32_t *d_values, unsigned int arrayLength, int sortOrder)
 {
-    unsigned int elemsPerThreadBlock = arrayLength / (BITONIC_BLOCKS);
+    unsigned int elemsPerThreadBlock = arrayLength / (BITONIC_SORT_BLOCKS);
     unsigned int sharedMemSize = elemsPerThreadBlock * sizeof(*d_values);
 
     // Define grid and block dimensions for kernel launch
-    dim3 dimGrid(BITONIC_BLOCKS, 1, 1);
+    dim3 dimGrid(BITONIC_SORT_BLOCKS, 1, 1);
     dim3 dimBlock(BITONIC_SORT_THREADS, 1, 1);
 
     // Launch the normalized bitonic sort kernel
@@ -213,7 +213,7 @@ void bitonicSortParallel(uint32_t *d_values, unsigned int array_length, int sort
 {
     // Calculate the next power of 2 for the array length
     unsigned int arrayLenPower2 = nextPowerOf2(array_length);
-    unsigned int elemsPerBlockBitonicSort = array_length / BITONIC_BLOCKS;
+    unsigned int elemsPerBlockBitonicSort = array_length / BITONIC_SORT_BLOCKS;
     unsigned int elemsPerBlockMergeLocal = array_length / MERGE_GLOBAL_BLOCKS;
 
     // Calculate the number of phases for the bitonic sort and merge

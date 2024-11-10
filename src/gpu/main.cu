@@ -20,20 +20,23 @@ void printArray(const uint32_t* array, unsigned int length, const std::string& a
 }
 
 // Function to run sorting tests
-void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder, unsigned int numThreads, bool skipGPU, const std::string& resultFolder) {
+void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder, unsigned int threadsCPU, bool skipGPU, const std::string& resultFolder) {
     // Print the current working directory
     std::cout << "Current working directory: " << getCurrentDirectory() << std::endl;
 
+    // Calculate total threads for the current configuration (only for GPU)
+    constexpr unsigned int threadsGPU = BITONIC_SORT_THREADS * BITONIC_SORT_BLOCKS;
+
     // Get the result filename based on array length
-    const std::string resultFilename = getResultFilename(arrayLength, resultFolder, numThreads);
+    const std::string resultFilename = getResultFilename(arrayLength, resultFolder, threadsCPU, threadsGPU, skipGPU);
     std::cout << "Results will be saved in: " << resultFilename << std::endl;
 
     // Compute block and grid sizes
-    // unsigned int elemsPerThreadBlock = arrayLength / (BITONIC_SORT_THREADS * BITONIC_BLOCKS);
+    // unsigned int elemsPerThreadBlock = arrayLength / (THREADS_BITONIC_SORT * BITONIC_BLOCKS);
     // unsigned int gridSize = (arrayLength + elemsPerThreadBlock - 1) / elemsPerThreadBlock;
 
     // Initialize result file with grid, block size, and thread info
-    initializeResultFile(resultFilename, arrayLength, testRepetitions, sortOrder, BITONIC_BLOCKS, numThreads, skipGPU);
+    initializeResultFile(resultFilename, arrayLength, testRepetitions, sortOrder, threadsCPU, skipGPU);
 
     // Allocate memory for the input array and a copy for CPU sorting
     uint32_t *values = new uint32_t[arrayLength];        // Array to hold values for GPU sorting
@@ -65,7 +68,7 @@ void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder, 
 
         // Perform sorting on the CPU using Bitonic Sort
         // float cpuTime = sortCPUv1(valuesCopy, arrayLength, sortOrder, numThreads);
-        float cpuTime = sortCPUv2(valuesCopy, arrayLength, sortOrder, numThreads);
+        float cpuTime = sortCPUv2(valuesCopy, arrayLength, sortOrder, threadsCPU);
 
         // Debug print: Print the CPU-sorted array
         // printArray(valuesCopy, arrayLength, "CPU Sorted Array");
@@ -112,10 +115,10 @@ int main(int argc, char* argv[])
 
     // Parse optional arguments with defaults
     int sortOrder = (argc >= 4) ? atoi(argv[3]) : ORDER_ASC;       // Default to ASC if not provided
-    unsigned int numThreads = (argc >= 5) ? atoi(argv[4]) : 1; // Default to 1 thread if not provided
+    unsigned int threadsCPU = (argc >= 5) ? atoi(argv[4]) : 1; // Default to 1 thread if not provided
     bool skipGPU = (argc >= 6) ? atoi(argv[5]) : false;  // 1 to skip GPU sort, 0 to run GPU sort
     std::string resultFolder = (argc == 7) ? argv[6] : "../results";
 
     // Execute the sorting tests with the provided parameters
-    run(arrayLength, testRepetitions, sortOrder, numThreads, skipGPU, resultFolder);
+    run(arrayLength, testRepetitions, sortOrder, threadsCPU, skipGPU, resultFolder);
 }
