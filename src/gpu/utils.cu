@@ -146,7 +146,7 @@ void sortVerification(uint32_t* dataTable, const unsigned int arrayLength, int s
 __device__ void calcDataBlockLength(unsigned int& offset, unsigned int& dataBlockLength, unsigned int arrayLength,
                                     unsigned int numBlocks)
 {
-	unsigned int elemsPerThreadBlock = arrayLength / (numBlocks);
+	unsigned int elemsPerThreadBlock = arrayLength / numBlocks;
 	offset = blockIdx.x * elemsPerThreadBlock;
 	dataBlockLength =  offset + elemsPerThreadBlock <= arrayLength ? elemsPerThreadBlock : arrayLength - offset;
 }
