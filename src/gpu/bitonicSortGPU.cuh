@@ -30,7 +30,8 @@ __device__ void bitonicMergeStep(
 __global__ void normalizedBitonicSort(
     uint32_t *valuesGlobal,
     uint32_t arrayLength,
-    int sortOrder
+    int sortOrder,
+    bool isOptimized
 );
 
 // Kernel function for global bitonic merge
@@ -56,7 +57,8 @@ __global__ void bitonicMergeGlobalKernel(
 void runBitonicSortKernel(
     uint32_t *d_values,
     unsigned int arrayLength,
-    int sortOrder
+    int sortOrder,
+    bool isOptimized
 );
 
 // Host function to launch the global bitonic merge kernel

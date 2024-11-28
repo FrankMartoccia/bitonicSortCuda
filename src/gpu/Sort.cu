@@ -84,31 +84,38 @@ void Sort::sortValues()
  * Also calls the private sort function.
  *** Call the constructor first ***
  */
-float Sort::sortGPU()
-{
+float Sort::sortGPU() {
+    // Measure Pool Load Time (PLT)
+    TimerGPU timer_plt;
+    timer_plt.start();
     memoryAllocate(); // Allocate device memory for sorting
-
     memoryCopyBeforeSort(); // Copy data from host to device before sorting
+    timer_plt.stop();
+    float plt = timer_plt.getElapsedMilliseconds();
+    std::cout << "[GPU] - Pool Load Time: " << plt << " ms" << std::endl;
 
-    // Synchronize to ensure all operations are completed before starting the timer
-    cudaError_t error = cudaDeviceSynchronize();
+    // Measure Pool Execution Time (PET)
+    TimerGPU timer_pet;
+    cudaError_t error = cudaDeviceSynchronize(); // Synchronize before starting
     checkCudaError(error);
-
-    TimerGPU timer_gpu; // Create a TimerGPU instance to measure sorting time
-    timer_gpu.start(); // Start the timer
+    timer_pet.start();
     sortValues(); // Perform sorting on GPU
-
-    // Synchronize to ensure sorting is complete before stopping the timer
-    error = cudaDeviceSynchronize();
+    error = cudaDeviceSynchronize(); // Synchronize to ensure sorting is complete
+    timer_pet.stop();
     checkCudaError(error);
+    float pet = timer_pet.getElapsedMilliseconds();
+    std::cout << "[GPU] - Pool Execution Time: " << pet << " ms" << std::endl;
 
-    timer_gpu.stop(); // Stop the timer
-    const float time = timer_gpu.getElapsedMilliseconds(); // Get elapsed time in milliseconds
-    std::cout << "[GPU] - Sorting time: " << time << " ms" << std::endl; // Output sorting time
-
+    // Measure Data Download Time (DDT) - Optional
+    TimerGPU timer_ddt;
+    timer_ddt.start();
     memoryCopyAfterSort(); // Copy sorted data from device to host
+    timer_ddt.stop();
+    float ddt = timer_ddt.getElapsedMilliseconds();
+    std::cout << "[GPU] - Data Download Time: " << ddt << " ms" << std::endl;
 
     memoryFree(); // Free allocated device memory
 
-    return time; // Return the elapsed sorting time
+    // Return total time or individual phase times as needed
+    return pet;
 }
