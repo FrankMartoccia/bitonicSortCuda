@@ -30,7 +30,7 @@ run_folder="../results/run_${folder_suffix}_$timestamp"
 mkdir -p "$run_folder"
 
 # Run experiments for array lengths as the powers of 2 specified
-for i in {18..22}
+for i in {18..26}
 do
     array_length=$((2**i))  # Divide by 4 because each element is 4 bytes (32 bits)
     size_in_mb=$(((2**i * 4) / 1024 / 1024))  # Calculate the size in MB for display
