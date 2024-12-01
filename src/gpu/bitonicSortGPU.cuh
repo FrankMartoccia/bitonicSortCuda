@@ -76,6 +76,34 @@ void runBitonicMergeGlobalKernel(
     int sortOrder
 );
 
+// This function performs bitonic sort without using shared memory
+// "d_values" - Pointer to the data array on the device.
+// "array_length" - Length of the array.
+// "sortOrder" - Order of sorting (ascending or descending).
+// "phasesBitonicSort" - Number of phases for bitonic sort on sub-blocks.
+// "phasesAll" - Total number of phases for the entire array.
+void bitonicSortV1(
+    uint32_t *d_values,
+    unsigned int array_length,
+    int sortOrder,
+    unsigned int phasesBitonicSort,
+    unsigned int phasesAll
+);
+
+// This function performs bitonic sort using shared memory.
+// "d_values" - Pointer to the data array on the device.
+// "array_length" - Length of the array.
+// "sortOrder" - Order of sorting (ascending or descending).
+// "phasesBitonicSort" - Number of phases for bitonic sort on sub-blocks.
+// "phasesAll" - Total number of phases for the entire array.
+void bitonicSortV2(
+    uint32_t *d_values,
+    unsigned int array_length,
+    int sortOrder,
+    unsigned int phasesBitonicSort,
+    unsigned int phasesAll
+);
+
 // Host function for parallel bitonic sort
 // This function orchestrates the entire sorting process on the GPU, including bitonic sorting and merging.
 // "d_values" - Pointer to the data array on the device.

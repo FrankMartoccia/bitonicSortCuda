@@ -248,7 +248,49 @@ void runBitonicMergeLocalKernel(uint32_t *d_values, unsigned int array_length, u
 }
 
 /*
-Main function to execute parallel bitonic sort on GPU.
+Bitonic sort version 1 (non-optimized version)
+*/
+void bitonicSortV1(uint32_t *d_values, unsigned int array_length, int sortOrder,
+                   unsigned int phasesBitonicSort, unsigned int phasesAll)
+{
+    // Sort sub-blocks of input data using bitonic sort
+    runBitonicSortKernel(d_values, array_length, sortOrder, false);
+
+    // Perform global bitonic merge
+    for (unsigned int phase = phasesBitonicSort + 1; phase <= phasesAll; phase++)
+    {
+        for (unsigned int step = phase; step >= 1; step--)
+        {
+            runBitonicMergeGlobalKernel(d_values, array_length, phase, step, sortOrder);
+        }
+    }
+}
+
+/*
+Bitonic sort version 2 (optimized version)
+*/
+void bitonicSortV2(uint32_t *d_values, unsigned int array_length, int sortOrder,
+                   unsigned int phasesBitonicSort, unsigned int phasesAll)
+{
+    // Sort sub-blocks of input data using bitonic sort
+    runBitonicSortKernel(d_values, array_length, sortOrder, true);
+
+    // Perform global bitonic merge
+    for (unsigned int phase = phasesBitonicSort + 1; phase <= phasesAll; phase++)
+    {
+        unsigned int step = phase;
+        while (step > phasesBitonicSort)
+        {
+            runBitonicMergeGlobalKernel(d_values, array_length, phase, step, sortOrder);
+            step--;
+        }
+
+        runBitonicMergeLocalKernel(d_values, array_length, phase, step, sortOrder);
+    }
+}
+
+/*
+Main function to execute parallel bitonic sort on GPU
 */
 void bitonicSortParallel(uint32_t *d_values, unsigned int array_length, int sortOrder)
 {
@@ -264,41 +306,16 @@ void bitonicSortParallel(uint32_t *d_values, unsigned int array_length, int sort
     unsigned int phasesBitonicSort = log2(static_cast<double>(min(arrayLenPower2, elemsPerBlockBitonicSort)));
     unsigned int phasesAll = log2(static_cast<double>(arrayLenPower2));
 
-    // Check shared memory availability
-    if (sharedMemoryUsage > MAX_SHARED_MEMORY_SIZE)
+    // Check shared memory availability and call appropriate version
+    if (true)
     {
         std::cout << "[GPU] - Using non optimized version" << std::endl;
-        // Use non-optimized version
-        // Sort sub-blocks of input data using bitonic sort
-        runBitonicSortKernel(d_values, array_length, sortOrder, false);
-
-        // Perform global bitonic merge
-        for (unsigned int phase = phasesBitonicSort + 1; phase <= phasesAll; phase++)
-        {
-            for (unsigned int step = phase; step >= 1; step--)
-            {
-                runBitonicMergeGlobalKernel(d_values, array_length, phase, step, sortOrder);
-            }
-        }
+        bitonicSortV1(d_values, array_length, sortOrder, phasesBitonicSort, phasesAll);
     }
     else
     {
         std::cout << "[GPU] - Using optimized version" << std::endl;
-        // Sort sub-blocks of input data using bitonic sort
-        runBitonicSortKernel(d_values, array_length, sortOrder, true);
-
-        // Perform global bitonic merge
-        for (unsigned int phase = phasesBitonicSort + 1; phase <= phasesAll; phase++)
-        {
-            unsigned int step = phase;
-            while (step > phasesBitonicSort)
-            {
-                runBitonicMergeGlobalKernel(d_values, array_length, phase, step, sortOrder);
-                step--;
-            }
-
-            runBitonicMergeLocalKernel(d_values, array_length, phase, step, sortOrder);
-        }
+        bitonicSortV2(d_values, array_length, sortOrder, phasesBitonicSort, phasesAll);
     }
 }
 
