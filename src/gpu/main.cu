@@ -67,7 +67,7 @@ void run(unsigned int arrayLength, unsigned int testRepetitions, int sortOrder, 
         }
 
         // Perform sorting on the CPU using Bitonic Sort
-        // float cpuTime = sortCPUv1(valuesCopy, arrayLength, sortOrder, numThreads);
+        // float cpuTime = sortCPUv1(valuesCopy, arrayLength, sortOrder, threadsCPU);
         float cpuTime = sortCPUv2(valuesCopy, arrayLength, sortOrder, threadsCPU);
 
         // Debug print: Print the CPU-sorted array

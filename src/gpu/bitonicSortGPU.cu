@@ -145,7 +145,6 @@ __global__ void bitonicMergeLocalKernel(
     uint32_t *d_values, unsigned int array_length, unsigned int step, int sortOrder, bool isFirstStepOfPhase) {
 
     extern __shared__ uint32_t mergeTile[];
-    bool isFirstStepOfPhaseCopy = isFirstStepOfPhase;
     unsigned int offset, dataBlockLength;
     calcDataBlockLength(offset, dataBlockLength, array_length, BITONIC_SORT_BLOCKS);
 
@@ -161,10 +160,9 @@ __global__ void bitonicMergeLocalKernel(
     // Bitonic merge
     for (unsigned int stride = 1 << (step - 1); stride > 0; stride >>= 1)
     {
-        if (isFirstStepOfPhaseCopy)
+        if (isFirstStepOfPhase)
         {
             bitonicMergeStep(valuesTile, 0, array_length, dataBlockLength, stride, sortOrder, BITONIC_SORT_THREADS, true);
-            isFirstStepOfPhaseCopy = false;
         }
         else
         {
