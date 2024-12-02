@@ -284,7 +284,6 @@ void bitonicSortV2(uint32_t *d_values, unsigned int array_length, int sortOrder,
             runBitonicMergeGlobalKernel(d_values, array_length, phase, step, sortOrder);
             step--;
         }
-
         runBitonicMergeLocalKernel(d_values, array_length, phase, step, sortOrder);
     }
 }
@@ -307,7 +306,7 @@ void bitonicSortParallel(uint32_t *d_values, unsigned int array_length, int sort
     unsigned int phasesAll = log2(static_cast<double>(arrayLenPower2));
 
     // Check shared memory availability and call appropriate version
-    if (true)
+    if (sharedMemoryUsage > MAX_SHARED_MEMORY_SIZE)
     {
         std::cout << "[GPU] - Using non optimized version" << std::endl;
         bitonicSortV1(d_values, array_length, sortOrder, phasesBitonicSort, phasesAll);
