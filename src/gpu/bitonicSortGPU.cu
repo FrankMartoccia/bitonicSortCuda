@@ -13,37 +13,41 @@ __device__ void bitonicMergeStep(
     int sortOrder, int numThreads, bool isFirstStepOfPhase
 )
 {
-    // Each thread will compare and exchange 2 elements in the bitonic merge step
+    // Each thread processes one or more element pairs within the current data block.
+    // Threads advance in steps of `numThreads` to ensure the entire data block is covered.
     for (unsigned int tx = threadIdx.x; tx < dataBlockLen >> 1; tx += numThreads)
     {
+        // Calculate the global index of the current thread's element pair.
         unsigned int indexThread = offsetGlobal + tx;
-        unsigned int offset = stride;
+        unsigned int offset = stride; // Default distance between elements being compared.
 
-        // Special handling for the first step of every phase (normalized bitonic sort requires this)
+        // Special handling for the first step of a phase:
+        // Normalize thread indices and modify offsets to match the specific bitonic sort structure.
         if (isFirstStepOfPhase)
         {
-            // Calculate offset and reverse thread indices within sub-blocks for ascending order
-            offset = ((indexThread % stride) * 2) + 1; // +1 is added to have the offset odd
-            // Recalculate indexThread to mirror its corresponding index within the current stride group.
-            // 1. (indexThread / stride) * stride:
-            //    - Aligns indexThread to the start of its group (of size 'stride').
-            // 2. (indexThread % stride):
-            //    - Finds the relative position of indexThread within its group.
-            // 3. (stride - 1) - (indexThread % stride):
-            //    - Mirrors the thread's position within the group, reversing the order of threads in the current stride.
+            // Calculate a stride-based offset and reverse thread indices within the stride.
+            offset = ((indexThread % stride) * 2) + 1; // Offset must be odd for the first step.
+            // Reverse the thread index within its sub-block:
+            // - Each thread operates within a sub-block of size `stride`.
+            // - This transformation ensures threads access elements in a reversed order within the sub-block.
+            // - Steps:
+            //    1. `indexThread / stride` calculates the sub-block index (base index of the block).
+            //    2. `indexThread % stride` calculates the thread's offset within the sub-block.
+            //    3. `((stride - 1) - (indexThread % stride))` reverses the offset within the block.
+            //    4. Combine the sub-block base index and the reversed offset to compute the new `indexThread`.
             indexThread = (indexThread / stride) * stride + ((stride - 1) - (indexThread % stride));
         }
 
-        // Calculate the index used in compareExchange()
+        // Determine the index of the first element in the pair being compared.
         unsigned int index = (indexThread * 2) - (indexThread % stride);
 
-        // Check array bounds to avoid invalid memory access
+        // Check if the indices are within bounds to avoid accessing out-of-range memory.
         if (index + offset >= arrayLength)
         {
             break;
         }
 
-        // Compare and exchange elements based on the sort order
+        // Compare and exchange elements based on the specified sort order (ascending/descending).
         compareExchange(&values[index], &values[index + offset], sortOrder);
     }
 }
@@ -158,6 +162,7 @@ __global__ void bitonicMergeLocalKernel(
     __syncthreads();
 
     // Bitonic merge
+    // Loop through decreasing powers of two starting from 2^(step - 1)
     for (unsigned int stride = 1 << (step - 1); stride > 0; stride >>= 1)
     {
         if (isFirstStepOfPhase)
@@ -179,7 +184,7 @@ __global__ void bitonicMergeLocalKernel(
 }
 
 /*
-Launches the kernel for bitonic sorting using shared memory.
+Launches the kernel for bitonic sorting.
 */
 void runBitonicSortKernel(uint32_t *d_values, unsigned int arrayLength, int sortOrder, bool isOptimized)
 {

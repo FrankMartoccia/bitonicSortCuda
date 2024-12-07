@@ -50,7 +50,7 @@ __global__ void bitonicMergeGlobalKernel(
 );
 
 // Host function to launch the normalized bitonic sort kernel
-// This function launches the kernel to perform bitonic sort on blocks of data in shared memory.
+// This function launches the kernel to perform bitonic sort on blocks of data.
 // "d_values" - Pointer to the data array on the device.
 // "arrayLength" - Length of the array to be sorted.
 // "sortOrder" - Order of sorting (ascending or descending).
