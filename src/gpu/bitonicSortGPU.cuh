@@ -84,7 +84,7 @@ void runBitonicMergeGlobalKernel(
 // "phasesAll" - Total number of phases for the entire array.
 void bitonicSortV1(
     uint32_t *d_values,
-    unsigned int array_length,
+    unsigned int arrayLength,
     int sortOrder,
     unsigned int phasesBitonicSort,
     unsigned int phasesAll
@@ -98,7 +98,7 @@ void bitonicSortV1(
 // "phasesAll" - Total number of phases for the entire array.
 void bitonicSortV2(
     uint32_t *d_values,
-    unsigned int array_length,
+    unsigned int arrayLength,
     int sortOrder,
     unsigned int phasesBitonicSort,
     unsigned int phasesAll
@@ -111,7 +111,7 @@ void bitonicSortV2(
 // "sortOrder" - Order of sorting (ascending or descending).
 void bitonicSortParallel(
     uint32_t *d_values,
-    unsigned int array_length,
+    unsigned int arrayLength,
     int sortOrder
 );
 
