@@ -27,6 +27,7 @@ __device__ void bitonicMergeStep(
 // "valuesGlobal" - Array of values to be sorted.
 // "arrayLength" - Length of the data table.
 // "sortOrder" - Order of sorting (ascending or descending).
+// "isOptimized" - Specifies if the optimized version of the algorithm can be used
 __global__ void bitonicSort(
     uint32_t *valuesGlobal,
     uint32_t arrayLength,
@@ -49,11 +50,26 @@ __global__ void bitonicMergeGlobal(
     bool isFirstStepOfPhase
 );
 
+// Kernel function for global bitonic merge
+// This kernel handles the merging step for blocks of data that fit in shared memory.
+// "d_values" - Pointer to the data array on the device.
+// "array_length" - Length of the array.
+// "step" - Current step within the phase.
+// "sortOrder" - Order of sorting (ascending or descending).
+// "isFirstStepOfPhase" - Flag indicating if this is the first step of the phase.
+__global__ void bitonicMergeLocal(
+    uint32_t *d_values,
+    unsigned int array_length,
+    unsigned int step,
+    int sortOrder,
+    bool isFirstStepOfPhase
+);
+
 // Host function to launch the normalized bitonic sort kernel
-// This function launches the kernel to perform bitonic sort on blocks of data.
 // "d_values" - Pointer to the data array on the device.
 // "arrayLength" - Length of the array to be sorted.
 // "sortOrder" - Order of sorting (ascending or descending).
+// "isOptimized" - Specifies if the optimized version of the algorithm can be used
 void runBitonicSort(
     uint32_t *d_values,
     unsigned int arrayLength,
@@ -62,7 +78,6 @@ void runBitonicSort(
 );
 
 // Host function to launch the global bitonic merge kernel
-// This function is used to launch the bitonic merge kernel on blocks that are too large to fit in shared memory.
 // "d_values" - Pointer to the data array on the device.
 // "arrayLength" - Length of the array.
 // "phase" - Current phase of the merge.
@@ -71,6 +86,20 @@ void runBitonicSort(
 void runBitonicMergeGlobal(
     uint32_t *d_values,
     unsigned int arrayLength,
+    unsigned int phase,
+    unsigned int step,
+    int sortOrder
+);
+
+// Host function to launch the local bitonic merge kernel
+// "d_values" - Pointer to the data array on the device.
+// "arrayLength" - Length of the array.
+// "phase" - Current phase of the merge.
+// "step" - Current step within the phase.
+// "sortOrder" - Order of sorting (ascending or descending).
+void runBitonicMergeLocal(
+    uint32_t *d_values,
+    unsigned int array_length,
     unsigned int phase,
     unsigned int step,
     int sortOrder

@@ -68,10 +68,8 @@ __global__ void bitonicSort(
     {
         // Shared memory to hold the tile being sorted
         extern __shared__ uint32_t bitonicSortTile[];
-
         // Copy data from global memory to shared memory
-        for (unsigned int tx = threadIdx.x; tx < dataBlockLength; tx += BITONIC_SORT_THREADS)
-        {
+        for (unsigned int tx = threadIdx.x; tx < dataBlockLength; tx += BITONIC_SORT_THREADS) {
             bitonicSortTile[tx] = valuesGlobal[offset + tx];
         }
         __syncthreads();
@@ -145,7 +143,7 @@ This kernel merges blocks of data in shared memory to improve performance.
 Each thread block handles a portion of the data, performing the merge locally
 within shared memory before writing the results back to global memory.
 */
-__global__ void bitonicMergeLocalKernel(
+__global__ void bitonicMergeLocal(
     uint32_t *d_values, unsigned int arrayLength, unsigned int step, int sortOrder, bool isFirstStepOfPhase) {
 
     extern __shared__ uint32_t mergeTile[];
@@ -231,7 +229,7 @@ Launches the kernel for local bitonic merging using shared memory.
 This function calculates the required shared memory size and launches
 the `bitonicMergeLocalKernel` for merging smaller blocks of data in parallel.
 */
-void runBitonicMergeLocalKernel(uint32_t *d_values, unsigned int arrayLength, unsigned int phase, unsigned int step, int sortOrder) {
+void runBitonicMergeLocal(uint32_t *d_values, unsigned int arrayLength, unsigned int phase, unsigned int step, int sortOrder) {
 
     unsigned int elemsPerThreadBlock = arrayLength / BITONIC_SORT_BLOCKS;
     unsigned int sharedMemSize = elemsPerThreadBlock * sizeof(*d_values);
@@ -240,12 +238,12 @@ void runBitonicMergeLocalKernel(uint32_t *d_values, unsigned int arrayLength, un
     dim3 dimBlock(BITONIC_SORT_THREADS, 1, 1);
 
     if (phase == step) {
-        bitonicMergeLocalKernel<<<dimGrid, dimBlock, sharedMemSize>>>(
+        bitonicMergeLocal<<<dimGrid, dimBlock, sharedMemSize>>>(
             d_values, arrayLength, step, sortOrder, true);
     }
     else
     {
-        bitonicMergeLocalKernel<<<dimGrid, dimBlock, sharedMemSize>>>(
+        bitonicMergeLocal<<<dimGrid, dimBlock, sharedMemSize>>>(
             d_values, arrayLength, step, sortOrder, false);
     }
 }
@@ -287,7 +285,7 @@ void bitonicSortV2(uint32_t *d_values, unsigned int arrayLength, int sortOrder,
             runBitonicMergeGlobal(d_values, arrayLength, phase, step, sortOrder);
             step--;
         }
-        runBitonicMergeLocalKernel(d_values, arrayLength, phase, step, sortOrder);
+        runBitonicMergeLocal(d_values, arrayLength, phase, step, sortOrder);
     }
 }
 
