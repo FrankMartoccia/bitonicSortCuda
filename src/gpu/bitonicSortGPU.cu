@@ -150,12 +150,10 @@ __global__ void bitonicMergeLocal(
     unsigned int offset, dataBlockLength;
     calcDataBlockLength(offset, dataBlockLength, arrayLength, BITONIC_SORT_BLOCKS);
 
-    uint32_t *valuesTile = mergeTile;
-
     // Reads data from global to shared memory.
     for (unsigned int tx = threadIdx.x; tx < dataBlockLength; tx += BITONIC_SORT_THREADS)
     {
-        valuesTile[tx] = d_values[offset + tx];
+        mergeTile[tx] = d_values[offset + tx];
     }
     __syncthreads();
 
@@ -165,11 +163,11 @@ __global__ void bitonicMergeLocal(
     {
         if (isFirstStepOfPhase)
         {
-            bitonicMergeStep(valuesTile, 0, arrayLength, dataBlockLength, stride, sortOrder, BITONIC_SORT_THREADS, true);
+            bitonicMergeStep(mergeTile, 0, arrayLength, dataBlockLength, stride, sortOrder, BITONIC_SORT_THREADS, true);
         }
         else
         {
-            bitonicMergeStep(valuesTile, 0, arrayLength, dataBlockLength, stride, sortOrder, BITONIC_SORT_THREADS, false);
+            bitonicMergeStep(mergeTile, 0, arrayLength, dataBlockLength, stride, sortOrder, BITONIC_SORT_THREADS, false);
         }
         __syncthreads();
     }
@@ -177,7 +175,7 @@ __global__ void bitonicMergeLocal(
     // Stores data from shared to global memory
     for (unsigned int tx = threadIdx.x; tx < dataBlockLength; tx += BITONIC_SORT_THREADS)
     {
-        d_values[offset + tx] = valuesTile[tx];
+        d_values[offset + tx] = mergeTile[tx];
     }
 }
 
