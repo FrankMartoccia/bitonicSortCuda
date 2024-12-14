@@ -27,7 +27,7 @@ __device__ void bitonicMergeStep(
 // "valuesGlobal" - Array of values to be sorted.
 // "arrayLength" - Length of the data table.
 // "sortOrder" - Order of sorting (ascending or descending).
-__global__ void normalizedBitonicSort(
+__global__ void bitonicSort(
     uint32_t *valuesGlobal,
     uint32_t arrayLength,
     int sortOrder,
@@ -41,7 +41,7 @@ __global__ void normalizedBitonicSort(
 // "step" - Current step of the merging phase.
 // "sortOrder" - Sorting order (ascending or descending).
 // "isFirstStepOfPhase" - Flag indicating if this is the first step of the phase.
-__global__ void bitonicMergeGlobalKernel(
+__global__ void bitonicMergeGlobal(
     uint32_t *dataTable,
     unsigned int arrayLength,
     unsigned int step,
@@ -54,7 +54,7 @@ __global__ void bitonicMergeGlobalKernel(
 // "d_values" - Pointer to the data array on the device.
 // "arrayLength" - Length of the array to be sorted.
 // "sortOrder" - Order of sorting (ascending or descending).
-void runBitonicSortKernel(
+void runBitonicSort(
     uint32_t *d_values,
     unsigned int arrayLength,
     int sortOrder,
@@ -68,7 +68,7 @@ void runBitonicSortKernel(
 // "phase" - Current phase of the merge.
 // "step" - Current step within the phase.
 // "sortOrder" - Order of sorting (ascending or descending).
-void runBitonicMergeGlobalKernel(
+void runBitonicMergeGlobal(
     uint32_t *d_values,
     unsigned int arrayLength,
     unsigned int phase,

@@ -11,7 +11,7 @@ constexpr unsigned int BITONIC_BLOCK_SIZE = 1024; // Size for bitonic sort block
 // SIMD-optimized bitonic sort for small arrays.
 // "values" Pointer to the array to be sorted
 // "length" Number of elements in the array
-void simdBitonicSort(uint32_t* values, unsigned int length);
+void bitonicSortV2(uint32_t* values, unsigned int length);
 
 // Bucket sort implementation for large arrays.
 // "values" Pointer to the array to be sorted

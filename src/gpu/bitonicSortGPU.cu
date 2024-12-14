@@ -56,7 +56,7 @@ __device__ void bitonicMergeStep(
 Normalized Bitonic Sort Kernel.
 This kernel sorts blocks of input data.
 */
-__global__ void normalizedBitonicSort(
+__global__ void bitonicSort(
     uint32_t *valuesGlobal, uint32_t arrayLength, int sortOrder, bool isOptimized)
 {
     unsigned int offset, dataBlockLength;
@@ -128,7 +128,7 @@ __global__ void normalizedBitonicSort(
 Global Bitonic Merge Kernel.
 Handles merging of data blocks larger than shared memory.
 */
-__global__ void bitonicMergeGlobalKernel(
+__global__ void bitonicMergeGlobal(
     uint32_t *dataTable, unsigned int arrayLength, unsigned int step, int sortOrder, bool isFirstStepOfPhase)
 {
     unsigned int offset, dataBlockLength;
@@ -186,7 +186,7 @@ __global__ void bitonicMergeLocalKernel(
 /*
 Launches the kernel for bitonic sorting.
 */
-void runBitonicSortKernel(uint32_t *d_values, unsigned int arrayLength, int sortOrder, bool isOptimized)
+void runBitonicSort(uint32_t *d_values, unsigned int arrayLength, int sortOrder, bool isOptimized)
 {
     // Define grid and block dimensions for kernel launch
     dim3 dimGrid(BITONIC_SORT_BLOCKS, 1, 1);
@@ -198,13 +198,13 @@ void runBitonicSortKernel(uint32_t *d_values, unsigned int arrayLength, int sort
         unsigned int sharedMemSize = elemsPerThreadBlock * sizeof(*d_values);
 
         // Launch the normalized bitonic sort kernel with shared memory
-        normalizedBitonicSort <<<dimGrid, dimBlock, sharedMemSize>>>(
+        bitonicSort <<<dimGrid, dimBlock, sharedMemSize>>>(
             d_values, arrayLength, sortOrder, true
         );
     }
     else {
         // Launch the normalized bitonic sort kernel without shared memory
-        normalizedBitonicSort <<<dimGrid, dimBlock>>>(
+        bitonicSort <<<dimGrid, dimBlock>>>(
             d_values, arrayLength, sortOrder, false
         );
     }
@@ -213,7 +213,7 @@ void runBitonicSortKernel(uint32_t *d_values, unsigned int arrayLength, int sort
 /*
 Launches the kernel for global bitonic merging.
 */
-void runBitonicMergeGlobalKernel(
+void runBitonicMergeGlobal(
     uint32_t *d_values, unsigned int arrayLength, unsigned int phase, unsigned int step, int sortOrder)
 {
     // Define grid and block dimensions for the merge kernel
@@ -221,7 +221,7 @@ void runBitonicMergeGlobalKernel(
     dim3 dimBlock(BITONIC_SORT_THREADS, 1, 1);
 
     // Launch the global bitonic merge kernel
-    bitonicMergeGlobalKernel <<<dimGrid, dimBlock>>>(
+    bitonicMergeGlobal <<<dimGrid, dimBlock>>>(
         d_values, arrayLength, step, sortOrder, phase == step
     );
 }
@@ -257,14 +257,14 @@ void bitonicSortV1(uint32_t *d_values, unsigned int arrayLength, int sortOrder,
                    unsigned int phasesBitonicSort, unsigned int phasesAll)
 {
     // Sort sub-blocks of input data using bitonic sort
-    runBitonicSortKernel(d_values, arrayLength, sortOrder, false);
+    runBitonicSort(d_values, arrayLength, sortOrder, false);
 
     // Perform global bitonic merge
     for (unsigned int phase = phasesBitonicSort + 1; phase <= phasesAll; phase++)
     {
         for (unsigned int step = phase; step >= 1; step--)
         {
-            runBitonicMergeGlobalKernel(d_values, arrayLength, phase, step, sortOrder);
+            runBitonicMergeGlobal(d_values, arrayLength, phase, step, sortOrder);
         }
     }
 }
@@ -276,7 +276,7 @@ void bitonicSortV2(uint32_t *d_values, unsigned int arrayLength, int sortOrder,
                    unsigned int phasesBitonicSort, unsigned int phasesAll)
 {
     // Sort sub-blocks of input data using bitonic sort
-    runBitonicSortKernel(d_values, arrayLength, sortOrder, true);
+    runBitonicSort(d_values, arrayLength, sortOrder, true);
 
     // Perform global bitonic merge
     for (unsigned int phase = phasesBitonicSort + 1; phase <= phasesAll; phase++)
@@ -284,7 +284,7 @@ void bitonicSortV2(uint32_t *d_values, unsigned int arrayLength, int sortOrder,
         unsigned int step = phase;
         while (step > phasesBitonicSort)
         {
-            runBitonicMergeGlobalKernel(d_values, arrayLength, phase, step, sortOrder);
+            runBitonicMergeGlobal(d_values, arrayLength, phase, step, sortOrder);
             step--;
         }
         runBitonicMergeLocalKernel(d_values, arrayLength, phase, step, sortOrder);

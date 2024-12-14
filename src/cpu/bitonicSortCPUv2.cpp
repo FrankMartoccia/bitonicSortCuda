@@ -14,7 +14,7 @@
  * @param values Pointer to array to be sorted
  * @param length Number of elements in the array
  */
-void simdBitonicSort(uint32_t* values, unsigned int length) {
+void bitonicSortV2(uint32_t* values, unsigned int length) {
     // Pad array to nearest power of 2 which is required for bitonic sort
     unsigned int paddedLength = 1 << static_cast<int>(std::ceil(std::log2(length)));
     // Create temporary array with padding filled with max values
@@ -46,7 +46,6 @@ void simdBitonicSort(uint32_t* values, unsigned int length) {
             }
         }
     }
-
     // Copy back only the valid (non-padded) elements
     std::copy_n(padded.begin(), length, values);
 }
@@ -96,7 +95,7 @@ void bucketSort(uint32_t* values, unsigned int length, int sortOrder) {
     for (int i = 0; i < NUM_BUCKETS; i++) {
         if (buckets[i].size() > 1) {
             // Sort each non-empty bucket using bitonic sort
-            simdBitonicSort(buckets[i].data(), buckets[i].size());
+            bitonicSortV2(buckets[i].data(), buckets[i].size());
         }
     }
 
@@ -140,7 +139,7 @@ float sortCPUv2(uint32_t values[], unsigned int arrayLength, int sortOrder, unsi
         bucketSort(values, arrayLength, sortOrder);
     } else {
         // Use bitonic sort for small arrays
-        simdBitonicSort(values, arrayLength);
+        bitonicSortV2(values, arrayLength);
         // Reverse if descending order is requested
         if (sortOrder == 0) {
             std::reverse(values, values + arrayLength);

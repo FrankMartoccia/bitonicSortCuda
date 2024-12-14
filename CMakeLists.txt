@@ -26,19 +26,39 @@ add_executable(parallel
         src/cpu/bitonicSortCPUv2.h
 )
 
-# Ensure that the target supports CUDA separable compilation
+# Ensure CUDA separable compilation
 set_target_properties(parallel PROPERTIES
         CUDA_SEPARABLE_COMPILATION ON
 )
 
-# Link the CUDA runtime and other necessary CUDA libraries
+# Link CUDA runtime
 target_link_libraries(parallel cuda)
 
-# Specify the source file properties for CUDA files if necessary
-set_source_files_properties(src/gpu/utils.cu src/gpu/TimerGPU.cuh PROPERTIES LANGUAGE CUDA)
-
+# Find OpenMP
 find_package(OpenMP REQUIRED)
 if(OPENMP_FOUND)
+    # OpenMP flags
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
+
+# SIMD and Vectorization Optimization Flags
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    # GCC Flags
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx2 -mfma -fopenmp-simd")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ftree-vectorize -march=native")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    # Clang Flags
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx2 -mfma -fopenmp-simd")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Intel")
+    # Intel Compiler Flags
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -xHost -qopenmp-simd")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -vec")
+elseif(MSVC)
+    # Microsoft Visual C++
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:AVX2")
+endif()
+
+# Additional Optimization Flags
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
