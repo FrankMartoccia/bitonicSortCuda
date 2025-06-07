@@ -2,8 +2,6 @@
 
 A high-performance parallel implementation of the Bitonic Sort algorithm on both CPU (C++20 with OpenMP) and GPU (CUDA), developed as part of the **Computer Architecture** course project at the University of Pisa (MSc in Computer Engineering, A.Y. 2023/2024).
 
----
-
 ## Structure
 
 - `docs/` – Project documentation
@@ -13,9 +11,6 @@ A high-performance parallel implementation of the Bitonic Sort algorithm on both
   - `cpu/` – CPU implementation (v1 and optimized v2)
   - `gpu/` – CUDA kernels and GPU sorting logic
 
-
----
-
 ## Technologies
 
 - **Languages**: C++20, CUDA C++
@@ -24,8 +19,6 @@ A high-performance parallel implementation of the Bitonic Sort algorithm on both
 - **Hardware Tested**:
   - AMD Ryzen 9 7940HS (CPU)
   - NVIDIA GeForce RTX 4070 (GPU)
-
----
 
 ## Implementation
 
